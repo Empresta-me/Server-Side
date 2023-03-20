@@ -1,14 +1,15 @@
-from community import Community
-
+from src.community import Community
 from flask import Flask, jsonify, request
 
-app = Flask(__name__)
+def start_api():
+    community = Community()
+    app = Flask(__name__)
 
-community = Community()
+    @app.route("/association", methods=['POST'])
+    def associate():
+        # get challenge from headers
+        challenge = request.headers.get("challenge", None)
 
-@app.route("/association", methods=['POST'])
-def associate():
-    # get challenge from headers
-    challenge = request.headers.get("challenge", None)
+        return community.reply_association(challenge)
 
-    return community.association_response(challenge)
+    app.run()
