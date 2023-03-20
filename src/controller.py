@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 
 def start_api():
     community = Community()
-    app = Flask(__name__)
+    app = Flask("Community API")
 
     @app.route("/association", methods=['POST'])
     def associate():

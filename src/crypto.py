@@ -60,7 +60,7 @@ class Crypto:
         return True
      
     @classmethod
-    def get_public_numbers(cls, public_key):
+    def get_public_numbers(cls, public_key) -> tuple:
         """ Gets the x and y points that define the publlic key """ 
         
         (x,y) = (public_key.public_numbers().x, public_key.public_numbers().y)
@@ -92,8 +92,6 @@ class Crypto:
         
         loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
         return loaded_public_key
-
-
 
 """ 
 
