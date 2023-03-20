@@ -1,6 +1,7 @@
 from cryptography.hazmat.primitives import hashes 
 from cryptography.exceptions import InvalidSignature 
 from cryptography.hazmat.primitives.asymmetric import ec  
+from cryptography.hazmat.primitives import serialization
 
 class Crypto:
     """Cryptographic utilities""" 
@@ -21,7 +22,7 @@ class Crypto:
         
         # Generation 
         private_key = ec.generate_private_key(
-            ec.SECP384R1()
+            ec.SECP256K1()
         )
         
         return ( private_key, private_key.public_key())
@@ -38,12 +39,13 @@ class Crypto:
             ec.ECDSA(hashes.SHA256())
         )
 
-        return signature
+        return signature 
 
     @classmethod
     def verify(cls, public_key, message, signature: bytes) -> bool:
         """Verifies if given message matches with given signature"""
-          
+         
+
         if(type(message) != bytes):
             message = message.encode()
 
@@ -69,11 +71,31 @@ class Crypto:
     def numbers_to_public_key(cls, x: int, y: int) -> str:
         """ Generate a public key Object based on the x and y points that defines them """ 
         
-        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP384R1()).public_key()
+        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP256K1()).public_key()
 
         return p_k
 
-"""
+    @classmethod
+    def serialize(cls, public_key) -> bytes:
+        """ Generate a public key Object based on the x and y points that defines them """ 
+        
+        serialized_public = public_key.public_bytes(
+            encoding=serialization.Encoding.X962,
+            format=serialization.PublicFormat.CompressedPoint
+        ) 
+
+        return serialized_public
+    
+    @classmethod
+    def load_key(cls, serialized_public) :
+        """ Generate a public key Object based on the x and y points that defines them """ 
+        
+        loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
+        return loaded_public_key
+
+
+
+""" 
 
 # Generate key pair 
 (prv_k, pbl_k) = Crypto.asym_gen()
@@ -84,9 +106,15 @@ signature = Crypto.sign(prv_k, message)
 
 # get the numbers & Generate public key
 (x,y) = Crypto.get_public_numbers(pbl_k)
-new_pbl_key = Crypto.numbers_to_public_key(x,y)
+new_pbl_key = Crypto.numbers_to_public_key(x,y) 
+
+ser = Crypto.serialize(new_pbl_key)
+ 
+print(ser)
+new_new_P = Crypto.load_key(ser)
 
 # test the signature with the orivate key 
-print("Sgnature: " + str(Crypto.verify(new_pbl_key, b'pls work! I rly need this', signature))) 
+print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
 
+ 
 """
