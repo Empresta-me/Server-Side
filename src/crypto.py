@@ -63,7 +63,7 @@ class Crypto:
         
         (x,y) = (public_key.public_numbers().x, public_key.public_numbers().y)
         
-        return  (x,y)
+        return (x,y)
     
     @classmethod
     def numbers_to_public_key(cls, x: int, y: int) -> str:
