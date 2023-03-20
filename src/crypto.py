@@ -1,18 +1,13 @@
-import os
-import hashlib 
-import base64  
-from binascii import a2b_hex, b2a_hex  
 from cryptography.hazmat.primitives import hashes 
 from cryptography.exceptions import InvalidSignature 
-from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec  
 
 class Crypto:
     """Cryptographic utilities""" 
 
     @classmethod
-    def do_hash(cls, data: bytes) -> bytes:
-        """Returns an hash of a given data"""
+    def hash(cls, data: bytes) -> bytes:
+        """Returns an SHA256 hash of a given data"""
         
         digest = hashes.Hash(hashes.SHA256()) 
         digest.update(data)    
@@ -22,7 +17,7 @@ class Crypto:
 
     @classmethod
     def asym_gen(cls) -> tuple:
-        """Generates a new Asymetric key(Object) pair"""
+        """Generates a new asymmetric key(Object) pair"""
         
         # Generation 
         private_key = ec.generate_private_key(
@@ -33,7 +28,7 @@ class Crypto:
 
     @classmethod
     def sign(cls, private_key: str, data) -> bytes:
-        """Returns Signature of given data signed with given private key""" 
+        """Returns signature of given data signed with given private key""" 
  
         if(type(data) != bytes):
             data = data.encode()
@@ -77,7 +72,6 @@ class Crypto:
         p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP384R1()).public_key()
 
         return p_k
- 
 
 """
 

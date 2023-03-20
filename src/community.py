@@ -2,7 +2,7 @@ class Community:
 
     CHALLENGE_LENGTH = 16
 
-    def __init__():
+    def __init__(self):
         pass
 
     def reply_association(self, challenge : str):
