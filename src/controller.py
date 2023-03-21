@@ -22,4 +22,19 @@ def start_api():
         else:
             return f"Challenge missing or of incorrect length. Should be {community.CHALLENGE_LENGTH} bytes long.", 400
 
+    @app.route("/auth/associate", methods=['POST'])
+    def associate():
+        # get challenge from headers TODO: hardcoded direct approximation
+        password = request.headers.get("password", None)
+
+        # attempts to get association token
+        token = community.get_association_token(password)
+
+        # if the association was successful...
+        if token:
+            return token
+        else:
+            return "Association failed.", 400
+
+    # TODO: Enable TLS for secure communication
     app.run()
