@@ -27,7 +27,7 @@ class Community:
         """Shares community public information"""
         return {'title' : self.title, 'bio' : self.bio, 'public_key' : self.address }
 
-    def verify_key(self, challenge : str) -> dict:
+    def reply_challenge(self, challenge : str) -> dict:
         """Answers to challenge with signature"""
         # sign it and encode it to base58
         signature = base58.b58encode(Crypto.sign(self.private_key, challenge)).decode('utf-8')

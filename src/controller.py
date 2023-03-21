@@ -18,12 +18,13 @@ def start_api():
         
         # if the challenge is valid
         if challenge and len(bytes(challenge, 'utf-8')) == community.CHALLENGE_LENGTH:
-            return community.verify_key(challenge)
+            return community.reply_challenge(challenge)
         else:
             return f"Challenge missing or of incorrect length. Should be {community.CHALLENGE_LENGTH} bytes long.", 400
 
     @app.route("/auth/associate", methods=['POST'])
     def associate():
+        """Associates to the community as a member"""
         # get challenge from headers TODO: hardcoded direct approximation
         password = request.headers.get("password", None)
 
