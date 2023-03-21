@@ -18,7 +18,7 @@ class Crypto:
 
     @classmethod
     def asym_gen(cls) -> tuple:
-        """Generates a new asymmetric key(Object) pair"""
+        """Generates a new EC asymmetric key pair object"""
         
         # Generation 
         private_key = ec.generate_private_key(
@@ -53,8 +53,8 @@ class Crypto:
             public_key.verify(signature, message, ec.ECDSA(hashes.SHA256()))
         except InvalidSignature:
             return False
-        except:
-            print("Unidentified Error")
+        except Exception as e:
+            raise e
             return False
 
         return True

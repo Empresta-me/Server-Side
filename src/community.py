@@ -8,16 +8,27 @@ class Community:
     def __init__(self):
         # TODO: for now, it generates a new key each time. Implement persistance.
         self.private_key, self.public_key = Crypto.asym_gen()
-        self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8')
+        self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8') # public key encoded as base58 string
 
-    def reply_association(self, challenge : str):
-        """Replies to association request with the response for the challenge issued"""
-        # if the challenge is valid...
-        if challenge and len(bytes(challenge, 'utf-8')) == self.CHALLENGE_LENGTH:
-            # sign it and encode it to base58
-            signature = base58.b58encode(Crypto.sign(self.private_key, challenge)).decode('utf-8')
-            # return to the associate the public key plus the signature
-            return { 'public_key' : self.address, 'response' : signature }
-        # challenge missing or invalid
-        else:
-            return f"Challenge missing or incorrect length. Should be {self.CHALLENGE_LENGTH} bytes long.", 400
+        # TODO : fow now, hardcoded data. Implement persistance
+        self.title = "DETI Community"
+        self.bio = "Univeristy of Aveiro's first EMPRESTA.ME community!"
+
+        # dictonary for associates. the value represents whether the member has acknowledge the association
+        self.associates = {}
+
+    def get_info(self) -> dict:
+        return {'title' : self.title, 'bio' : self.bio, 'public_key' : self.address }
+
+    def verify_key(self, challenge : str) -> dict:
+        """Answears to challenge with signature"""
+
+        # sign it and encode it to base58
+        signature = base58.b58encode(Crypto.sign(self.private_key, challenge)).decode('utf-')
+
+        # return to the associate the public key plus the signature plus the session token
+        return { 'public_key' : self.address, 'response' : signature }
+
+    def association_ack(self):
+        """Acknowledges the member's acknowledgemenet; If everything's correct, the member is now associated"""
+        pass
