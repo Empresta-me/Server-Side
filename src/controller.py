@@ -37,5 +37,23 @@ def start_api():
         else:
             return "Association failed.", 400
 
+    @app.route("/acc/register", methods=['GET'])
+    def get_register_challenge():
+        """Gets a register token associated with the public key"""
+        # get challenge from headers TODO: hardcoded direct approximation
+        public_key = request.headers.get("public_key", None)
+
+        # if public key is missing, let em know
+        if not public_key:
+            return "public_key header missing.", 400
+
+        # gets a token and challenge
+        challenge = community.get_register_challenge(public_key)
+
+        if challenge:
+            return challenge, 201
+        else:
+            return "Public key is invalid or already registered.", 400
+
     # TODO: Enable TLS for secure communication
     app.run()
