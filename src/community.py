@@ -1,6 +1,7 @@
 from src.crypto import Crypto # cryptographic functions
 import base58 # for human friendly encoding
 import os # TODO explain
+import configparser
 
 class Community:
 
@@ -8,16 +9,18 @@ class Community:
     ASSOCIATION_TOKEN_LENGTH = 16
 
     def __init__(self):
+
+        config = configparser.ConfigParser()
+        config.read('config/config.ini') 
+
         # TODO: for now, it generates a new key each time. Implement persistance.
         self.private_key, self.public_key = Crypto.asym_gen()
         self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8') # public key encoded as base58 string
 
-        # TODO : fow now, hardcoded data. Implement persistance
-        self.title = "DETI Community"
-        self.bio = "Univeristy of Aveiro's first EMPRESTA.ME community!"
+        self.title = config['DETAILS']['title']           # self.title = "DETI Community"
+        self.bio = config['DETAILS']['bio']               # self.bio = "Univeristy of Aveiro's first EMPRESTA.ME community!"
 
-        # TODO: direct aproximation hardcoded for now
-        self.password = "batatinhas123"
+        self.password = config['DETAILS']['password']     # self.password = "batatinhas123" 
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
@@ -41,7 +44,6 @@ class Community:
 
     def get_association_token(self, password : str) -> bool:
         """Verifies association attempt from member and returns token"""
-        # TODO: direct aproximation hardcoded for now
         # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
 
         # if the password matches
