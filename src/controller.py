@@ -1,5 +1,6 @@
 from src.community import Community
 from flask import Flask, jsonify, request
+import json
 
 def start_api():
     community = Community()
@@ -36,6 +37,40 @@ def start_api():
             return token
         else:
             return "Association failed.", 400
+
+    @app.route("/acc/register", methods=['GET'])
+    def get_register_challenge():
+        """Gets a register token associated with the public key"""
+        # get challenge from headers TODO: hardcoded direct approximation
+        public_key = request.headers.get("public_key", None)
+
+        # if public key is missing, let em know
+        if not public_key:
+            return "public_key header missing.", 400
+
+        # gets a token and challenge
+        challenge = community.get_register_challenge(public_key)
+
+        if challenge:
+            return challenge, 201
+        else:
+            return "Public key is invalid or already registered.", 400
+
+    @app.route("/acc/register", methods=['POST'])
+    def reply_register_challenge():
+        # get json from body
+        account_json = request.data
+
+        # converts json to dict
+        # TODO: maybe we should check the schema
+        try:
+            account = json.loads(account_json)
+        except:
+            # TODO: write this better
+            return "Failed to parse body as accoun JSON.", 400
+
+        # TODO: actual registration
+        return str(account), 200
 
     # TODO: Enable TLS for secure communication
     app.run()
