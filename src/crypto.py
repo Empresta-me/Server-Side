@@ -127,12 +127,12 @@ class Crypto:
         return serialized_private
      
     @classmethod
-    def PEM_to_privateKey(cls, PEM_content) :
+    def PEM_to_privateKey(cls, PEM_content, password) :
         """ Returns a private key object given a PEM content """ 
         
         loaded_private_key = serialization.load_pem_private_key(
             PEM_content, 
-            password=b'testpassword',
+            password=password,
         )
         return loaded_private_key
 
@@ -159,7 +159,7 @@ new_new_P = Crypto.load_key(ser)
 print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
 
  
-"""
+
 
 private_key, public_key = Crypto.asym_gen()
 
@@ -170,3 +170,4 @@ f.close()
 f = open("public.PEM", "wb")
 f.write(Crypto.publicKey_to_PEM(public_key))    
 f.close()
+"""
