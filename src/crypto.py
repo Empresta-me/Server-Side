@@ -28,11 +28,8 @@ class Crypto:
         return ( private_key, private_key.public_key())
 
     @classmethod
-    def sign(cls, private_key: str, data) -> bytes:
+    def sign(cls, private_key, data : bytes) -> bytes:
         """Returns signature of given data signed with given private key""" 
- 
-        if(type(data) != bytes):
-            data = data.encode()
     
         signature = private_key.sign(
             data,
@@ -42,12 +39,8 @@ class Crypto:
         return signature 
 
     @classmethod
-    def verify(cls, public_key, message, signature: bytes) -> bool:
+    def verify(cls, public_key, message : bytes, signature : bytes) -> bool:
         """Verifies if given message matches with given signature"""
-         
-
-        if(type(message) != bytes):
-            message = message.encode()
 
         try:  
             public_key.verify(signature, message, ec.ECDSA(hashes.SHA256()))
@@ -87,9 +80,8 @@ class Crypto:
         return serialized_public
     
     @classmethod
-    def load_key(cls, serialized_public) :
+    def load_key(cls, serialized_public : bytes) :
         """ Generate a public key Object based on the x and y points that defines them """ 
-        
         loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
         return loaded_public_key
 

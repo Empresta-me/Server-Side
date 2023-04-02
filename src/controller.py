@@ -16,10 +16,14 @@ def start_api():
         """Verifies ownership of public key through challenge response authentication"""
         # get challenge from headers
         challenge = request.headers.get("challenge", None)
+
+        # get a response from the challenge
+        response = community.reply_challenge(challenge)
         
         # if the challenge is valid
-        if challenge and len(bytes(challenge, 'utf-8')) == community.CHALLENGE_LENGTH:
-            return community.reply_challenge(challenge)
+        if response:
+            return  response
+        # invalid challenge
         else:
             return f"Challenge missing or of incorrect length. Should be {community.CHALLENGE_LENGTH} bytes long.", 400
 
@@ -30,7 +34,7 @@ def start_api():
         password = request.headers.get("password", None)
 
         # attempts to get association token
-        token = community.get_association_token(password)
+        token = community.issue_association_token(password)
 
         # if the association was successful...
         if token:
@@ -41,20 +45,27 @@ def start_api():
     @app.route("/acc/register", methods=['GET'])
     def get_register_challenge():
         """Gets a register token associated with the public key"""
-        # get challenge from headers TODO: hardcoded direct approximation
+        # get token and challenge from headers
+        token = request.headers.get("token", None)
         public_key = request.headers.get("public_key", None)
 
-        # if public key is missing, let em know
+        # let them know if a header is missing
+        v = []
+        if not token:
+            v.append("'token' header missing.")
         if not public_key:
-            return "public_key header missing.", 400
+            v.append("'public_key' header missing.")
+        if v:
+            return '\n'.join(v), 400
 
         # gets a token and challenge
-        challenge = community.get_register_challenge(public_key)
+        challenge = community.get_register_challenge(token, public_key)
 
         if challenge:
             return challenge, 201
         else:
-            return "Public key is invalid or already registered.", 400
+            #TODO: unambigious error response?
+            return "Public key is invalid or already registered. / Invalid association token", 400
 
     @app.route("/acc/register", methods=['POST'])
     def reply_register_challenge():
@@ -69,7 +80,15 @@ def start_api():
             # TODO: write this better
             return "Failed to parse body as accoun JSON.", 400
 
-        # TODO: actual registration
+        # registers account
+        res = community.register_account(account)
+
+        if res:
+            return "Registration successful."
+        else:
+            # TODO: unambigious error response?
+            return "Registration failed. Account data incorrect / invalid challenge reply", 400
+
         return str(account), 200
 
     # TODO: Enable TLS for secure communication
