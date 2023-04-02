@@ -92,6 +92,50 @@ class Crypto:
         
         loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
         return loaded_public_key
+    
+    #NOTE: Cuurently Unneened 
+    @classmethod
+    def publicKey_to_PEM(cls, public_key) :
+        """ Generate a PEM file given a public key object """ 
+        
+        serialized_public = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        return serialized_public
+    
+   #NOTE: Cuurently Unneened 
+    @classmethod
+    def PEM_to_publicKey(cls, PEM_content) :
+        """ Returns a public key object given a PEM content """ 
+        
+        loaded_public_key = serialization.load_pem_public_key(
+            PEM_content,
+        )
+        return loaded_public_key
+
+    @classmethod
+    def privateKey_to_PEM(cls, private_key) :
+        """ Generate a PEM file given a private key object """ 
+        
+        serialized_private = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
+        )
+
+        return serialized_private
+     
+    @classmethod
+    def PEM_to_privateKey(cls, PEM_content) :
+        """ Returns a private key object given a PEM content """ 
+        
+        loaded_private_key = serialization.load_pem_private_key(
+            PEM_content, 
+            password=b'testpassword',
+        )
+        return loaded_private_key
+
 
 """ 
 
@@ -116,3 +160,13 @@ print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', 
 
  
 """
+
+private_key, public_key = Crypto.asym_gen()
+
+f = open("private.PEM", "wb")
+f.write(Crypto.privateKey_to_PEM(private_key))
+f.close()
+
+f = open("public.PEM", "wb")
+f.write(Crypto.publicKey_to_PEM(public_key))    
+f.close()
