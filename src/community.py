@@ -28,7 +28,11 @@ class Community:
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
+        # TODO: move this to redis
         self.association_tokens = set()
+
+        # TODO: move this to redis
+        self.register_challenges = {}
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -43,7 +47,7 @@ class Community:
         return { 'public_key' : self.address, 'response' : signature }
 
     def get_association_token(self, password : str) -> bool:
-        """Verifies association attemp from member and returns token""" 
+        """Verifies association attempt from member and returns token"""
         # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
 
         # if the password matches
@@ -61,4 +65,24 @@ class Community:
 
         # password does not match. return none
         else: 
+            return None
+
+    def get_register_challenge(self, public_key : str) -> bool:
+        """Verifies the key and issue a registration challenge"""
+        
+        # verifies if the public key is valid
+        if len(base58.b58decode(public_key)) == 33:
+
+            # overrides the previous challenge if there's already one
+            # NOTE: chould this allow a DoS attack? spamming for new challenges so that someone cant respond to the challenge
+
+            # generate challenges and store it (tied to the public key)
+            random_bytes = bytearray(os.urandom(self.CHALLENGE_LENGTH))
+            challenge = base58.b58encode(random_bytes).decode('utf-8')
+            self.register_challenges[public_key]= challenge
+
+            # returns token as base58
+            return base58.b58encode(challenge).decode('utf-8')
+        # invalid key, return nothing
+        else:
             return None
