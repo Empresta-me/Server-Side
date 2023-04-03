@@ -43,8 +43,12 @@ def start_api():
             return "Association failed.", 400
 
     @app.route("/auth/challenge", methods=['GET'])
-    def get_register_challenge():
+    def get_authentication_challenge():
         """Gets a authentication challenge for a public key"""
+
+        # NOTE: people can ask for challanges in behalf of someone else, revoking the previous one. is that an issue?
+        # NOTE: the same challenge is used for both login and registering. is that an issue?
+
         # get token and challenge from headers
         token = request.headers.get("token", None)
         public_key = request.headers.get("public_key", None)
@@ -64,11 +68,12 @@ def start_api():
         if challenge:
             return challenge, 201
         else:
-            #TODO: unambigious error response?
+            # TODO: unambigious error response?
             return "Public key is invalid or already registered. / Invalid association token", 400
 
     @app.route("/acc/register", methods=['POST'])
-    def reply_register_challenge():
+    def register():
+        """Registers a account with a valid token and challenge response"""
         # get json from body
         account_json = request.data
 
@@ -81,7 +86,7 @@ def start_api():
             return "Failed to parse body as accoun JSON.", 400
 
         # registers account
-        res = community.register_account(account)
+        res = community.register(account)
 
         if res:
             return "Registration successful."
@@ -90,6 +95,32 @@ def start_api():
             return "Registration failed. Account data incorrect / invalid challenge reply", 400
 
         return str(account), 200
+
+    @app.route("/acc/login", methods=['POST'])
+    def login():
+        """Verifies that your account is successfuly registered"""
+        # get public key and challenge from headers
+        public_key = request.headers.get("public_key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not response:
+            v.append("'response' header missing.")
+        if not public_key:
+            v.append("'public_key' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        # attemps login
+        res = community.login(public_key, response)
+
+        if res:
+            return "Login successful."
+        else:
+            return "Login failed. Public key / challenge response is invalid", 400
+
+        pass
 
     # TODO: Enable TLS for secure communication
     app.run()

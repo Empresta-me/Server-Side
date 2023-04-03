@@ -27,7 +27,7 @@ class Community:
         self.association_tokens = set()
 
         # TODO: move this to redis
-        self.register_challenges = {}
+        self.challenges = {}
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -91,7 +91,7 @@ class Community:
 
             # generate challenges and store it (tied to the public key)
             challenge = bytearray(os.urandom(self.CHALLENGE_LENGTH))
-            self.register_challenges[public_key]= challenge
+            self.challenges[public_key]= challenge
 
             # returns token as base58
             return base58.b58encode(challenge).decode('utf-8')
@@ -99,7 +99,7 @@ class Community:
         else:
             return None
 
-    def register_account(self, account : dict) -> bool:
+    def register(self, account : dict) -> bool:
         """Registers an account if the challenge response was valid. Returns true or false"""
 
         # get fields from account
@@ -118,10 +118,12 @@ class Community:
             return False
 
         # there must be a valid challenge pending for this account
-        if public_key not in self.register_challenges.keys():
+        if public_key not in self.challenges.keys():
             return False
 
-        challenge = self.register_challenges[public_key]
+        # TODO: Redis
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
@@ -129,6 +131,25 @@ class Community:
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
-        #TODO: Redis - store account here
+        # TODO: Redis - store account here
 
         return True
+
+    def login(self, public_key : str, response : str) -> bool:
+        """Verifies that an account is registered and that the challenge response is valid"""
+
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if public_key not in self.challenges.keys():
+            return False
+
+        # TODO: Redis
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+
+        # if the challenge is valid, then the login is successful
+        return Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8')))
