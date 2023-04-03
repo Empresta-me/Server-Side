@@ -2,8 +2,8 @@ from src.community import Community
 from flask import Flask, jsonify, request
 import json
 
-def start_api():
-    community = Community(b'testpassword')
+def start_api(pem : str):
+    community = Community(pem)
     app = Flask("Community API")
 
     @app.route("/meta/info", methods=['GET'])

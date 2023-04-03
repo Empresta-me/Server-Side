@@ -8,17 +8,13 @@ class Community:
     CHALLENGE_LENGTH = 16
     ASSOCIATION_TOKEN_LENGTH = 16
 
-    def __init__(self, key_encryption_password):
+    def __init__(self, key_encryption_password : str):
      
-        # gets community data from config file
-        config = configparser.ConfigParser()
-        config.read('config/config.ini')  
-          
-        private_file = open("config/private.PEM", "rb")  
-        self.private_key = Crypto.PEM_to_privateKey(private_file.read(), key_encryption_password)
-        self.public_key =  self.private_key.public_key()
+        # gets public and private key from PEM file
+        with open("config/key.pem", "rb") as key_file: 
+            self.private_key = Crypto.PEM_to_private_key(key_file.read(), bytes(key_encryption_password,'utf-8'))
+            self.public_key =  self.private_key.public_key()
         self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8')
-        private_file.close()
 
         # gets community data from config file
         config = configparser.ConfigParser()

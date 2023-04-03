@@ -26,7 +26,6 @@ class Crypto:
         )
         
         return ( private_key, private_key.public_key())
-
     @classmethod
     def sign(cls, private_key, data : bytes) -> bytes:
         """Returns signature of given data signed with given private key""" 
@@ -87,7 +86,7 @@ class Crypto:
     
     #NOTE: Cuurently Unneened 
     @classmethod
-    def publicKey_to_PEM(cls, public_key) :
+    def public_key_to_PEM(cls, public_key) :
         """ Generate a PEM file given a public key object """ 
         
         serialized_public = public_key.public_bytes(
@@ -96,9 +95,9 @@ class Crypto:
         )
         return serialized_public
     
-   #NOTE: Cuurently Unneened 
+   #NOTE: Cuurently unecessary
     @classmethod
-    def PEM_to_publicKey(cls, PEM_content) :
+    def PEM_to_public_key(cls, PEM_content : bytes) :
         """ Returns a public key object given a PEM content """ 
         
         loaded_public_key = serialization.load_pem_public_key(
@@ -107,19 +106,19 @@ class Crypto:
         return loaded_public_key
 
     @classmethod
-    def privateKey_to_PEM(cls, private_key) :
+    def private_key_to_PEM(cls, private_key : bytes) :
         """ Generate a PEM file given a private key object """ 
         
         serialized_private = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
+            encryption_algorithm=serialization.BestAvailableEncryption(bytes('testpassword','utf-8'))
         )
 
         return serialized_private
      
     @classmethod
-    def PEM_to_privateKey(cls, PEM_content, password) :
+    def PEM_to_private_key(cls, PEM_content : bytes, password : bytes) :
         """ Returns a private key object given a PEM content """ 
         
         loaded_private_key = serialization.load_pem_private_key(
@@ -127,7 +126,6 @@ class Crypto:
             password=password,
         )
         return loaded_private_key
-
 
 """ 
 
