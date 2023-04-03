@@ -3,7 +3,7 @@ from flask import Flask, jsonify, request
 import json
 
 def start_api():
-    community = Community()
+    community = Community(b'testpassword')
     app = Flask("Community API")
 
     @app.route("/meta/info", methods=['GET'])
