@@ -148,9 +148,6 @@ new_new_P = Crypto.load_key(ser)
 # test the signature with the orivate key 
 print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
 
- 
-
-
 private_key, public_key = Crypto.asym_gen()
 
 f = open("private.PEM", "wb")

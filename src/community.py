@@ -22,7 +22,7 @@ class Community:
 
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
-        self.password = config['DETAILS']['password']      
+        self.password = config['SECURITY']['password']      
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
