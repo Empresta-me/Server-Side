@@ -10,12 +10,14 @@ class Community:
 
     def __init__(self):
 
-        config = configparser.ConfigParser()
-        config.read('config/config.ini') 
-
         # TODO: for now, it generates a new key each time. Implement persistance.
         self.private_key, self.public_key = Crypto.asym_gen()
         self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8') # public key encoded as base58 string
+        
+
+        # gets community data from config file
+        config = configparser.ConfigParser()
+        config.read('config/config.ini') 
 
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
@@ -149,7 +151,57 @@ class Community:
         challenge = self.challenges.pop(public_key)
 
         # challenge, key and response should match
-        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
-
         # if the challenge is valid, then the login is successful
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
         return Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8')))
+
+    def store_key(self, public_key : str, private_key : str, response : str) -> bool:
+        """Stores a (encrypted) version of an user's private key on their behalf if the user is registerd and the response matches the challange and public key"""
+
+        # TODO: validate size
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if public_key not in self.challenges.keys():
+            return False
+
+        # TODO: Redis
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        # TODO: Redis - store key here
+
+        return True
+
+    def delete_key(self, public_key : str, private_key : str, response : str) -> bool:
+        """Stores a (encrypted) version of an user's private key on their behalf if the user is registerd and the response matches the challange and public key"""
+
+        # TODO: validate size
+
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if public_key not in self.challenges.keys():
+            return False
+
+        # TODO: Redis
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        # TODO: Redis - if the private key is not is storage...
+        if False:
+            raise ResourceWarning(f'There were no private keys stored under the public key {public_key}.')
+
+        # TODO: Redis - remove key from storage
+
+        return True

@@ -47,7 +47,7 @@ def start_api():
         """Gets a authentication challenge for a public key"""
 
         # NOTE: people can ask for challanges in behalf of someone else, revoking the previous one. is that an issue?
-        # NOTE: the same challenge is used for both login and registering. is that an issue?
+        # NOTE: the same challenge is used for login, registering and key storage. is that an issue?
 
         # get token and challenge from headers
         token = request.headers.get("token", None)
@@ -120,7 +120,62 @@ def start_api():
         else:
             return "Login failed. Public key / challenge response is invalid", 400
 
-        pass
+    @app.route("/acc/store_key", methods=['POST'])
+    def store_private_key():
+        """Stores an (encrypted) version of an user's private key on their behalf"""
+
+        # gets challange response, public and (encrypted) private from headers
+        public_key = request.headers.get("public_key", None)
+        private_key = request.headers.get("private_key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not private_key:
+            v.append("'private_key' header missing.")
+        if not public_key:
+            v.append("'public_key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        # attempts to store key
+        res = community.store_key(public_key, private_key, response)
+
+        if res:
+            return "Key stored successful."
+        else:
+            return "Key storage failed. Public key / challenge response is invalid", 400
+
+    @app.route("/acc/remove_key", methods=['POST'])
+    def delete_private_key():
+        """Removes storaged key from the community db"""
+
+        # gets challange response, public and (encrypted) private from headers
+        public_key = request.headers.get("public_key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not public_key:
+            v.append("'public_key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        # attempts to store key
+        try:
+            res = community.delete_key(public_key, private_key, response)
+        # if there was no key stored...
+        except ResourceWarning as e:
+            return str(e), 205
+
+        if res:
+            return "Key stored successful."
+        else:
+            return "Key storage failed. Public key / challenge response is invalid", 400
 
     # TODO: Enable TLS for secure communication
     app.run()
