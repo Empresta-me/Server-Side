@@ -70,8 +70,8 @@ class Community:
         else: 
             return None
 
-    def get_register_challenge(self, token : str, public_key : str) -> str:
-        """Verifies the key and issue a registration challenge"""
+    def issue_authentication_challenge(self, token : str, public_key : str) -> str:
+        """Verifies the key and issues a registration challenge"""
 
         # TODO: Redis - must not be alerady registered
         
@@ -127,7 +127,6 @@ class Community:
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
 
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
-            print('c')
             return False
 
         #TODO: Redis - store account here

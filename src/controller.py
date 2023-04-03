@@ -42,9 +42,9 @@ def start_api():
         else:
             return "Association failed.", 400
 
-    @app.route("/acc/register", methods=['GET'])
+    @app.route("/auth/challenge", methods=['GET'])
     def get_register_challenge():
-        """Gets a register token associated with the public key"""
+        """Gets a authentication challenge for a public key"""
         # get token and challenge from headers
         token = request.headers.get("token", None)
         public_key = request.headers.get("public_key", None)
@@ -59,7 +59,7 @@ def start_api():
             return '\n'.join(v), 400
 
         # gets a token and challenge
-        challenge = community.get_register_challenge(token, public_key)
+        challenge = community.issue_authentication_challenge(token, public_key)
 
         if challenge:
             return challenge, 201
