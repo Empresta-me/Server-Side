@@ -3,6 +3,7 @@ from src.pub_sub import pub_sub
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
+from src.protocol import *
 
 class Community:
 
@@ -212,7 +213,14 @@ class Community:
 
         return True
     
-    @staticmethod
-    def handle_message(channel, method, properties, body): 
+    def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
-        # do something with the message here
+        msg_str = body.decode()
+        msg = Proto.parse(msg_str)
+
+        if msg.header == 'VOUCH':
+            self.handle(msg)
+
+    def handle_vouch(msg : VouchMessage):
+        """Handles vouch messages"""
+        pass
