@@ -178,4 +178,4 @@ def start_api(pem : str):
             return "Key storage failed. Public key / challenge response is invalid", 400
 
     # TODO: Enable TLS for secure communication
-    app.run()
+    app.run(host='0.0.0.0')
