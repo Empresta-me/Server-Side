@@ -10,6 +10,9 @@ class Message:
 
     def verify_general() -> bool:
         return True
+    
+    def verify_participants(participant : str) -> bool:
+        return True
 
     def verify_signature() -> bool:
         return True
@@ -30,18 +33,15 @@ class VouchMessage(Message):
         self.hash = hash
         self.signature = signature
 
+     def verify_participants(participant : str) -> bool:
+        return self.sender == participant or self.receiver == participant
+
     def hash(): -> str:
         pass
 
     @classmethod
-    def parse(cls, msg : str):
-        j = json.loads(msg)
-        try:
-            return VouchMessage(j['state'],j['clock'],j['sender'],j['receiver'], j['message'], j['nonce'], j['hash'], j['signature'])
-        except:
-            print('Could not parse to vouch')
-            print(msg)
-            return None
+    def parse(cls, j : str):
+        return VouchMessage(j['state'],j['clock'],j['sender'],j['receiver'], j['message'], j['nonce'], j['hash'], j['signature'])
 
 class Proto
     @classmethod
