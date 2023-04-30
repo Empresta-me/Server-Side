@@ -1,4 +1,5 @@
 from src.crypto import Crypto # cryptographic functions
+from src.pub_sub import pub_sub
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
@@ -136,6 +137,10 @@ class Community:
 
         # TODO: Redis - store account here
 
+
+        # Subscribe to the users exchange (queue) 
+        pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
+
         return True
 
     def login(self, public_key : str, response : str) -> bool:
@@ -206,3 +211,8 @@ class Community:
         # TODO: Redis - remove key from storage
 
         return True
+    
+    @staticmethod
+    def handle_message(channel, method, properties, body): 
+        print("Received message: {}".format(body.decode()), flush=True)
+        # do something with the message here
