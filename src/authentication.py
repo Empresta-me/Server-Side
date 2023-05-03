@@ -3,8 +3,12 @@ import os # TODO explain
 
 class AuthenticationBase:
 
-    def authenticate(self, data : str) -> str:
-        pass
+    def generate_token(self) -> str:
+        # generates random unique association token
+        random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
+        token = base58.b58encode(random_bytes).decode('utf-8')
+        # returns token as base58
+        return token
 
 class DirectApproximation(AuthenticationBase):
     """Strategy implementation for direct approximation (password)"""
@@ -18,14 +22,7 @@ class DirectApproximation(AuthenticationBase):
         # if the password matches
         if self.password == password:
             
-            # generates random unique association token
-            token = None
-            while token == None:
-                random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
-                token = base58.b58encode(random_bytes).decode('utf-8')
-            
-            # returns token as base58
-            return token
+            return self.generate_token()
 
         # password does not match. return none
         else: 
