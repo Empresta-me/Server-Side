@@ -33,17 +33,17 @@ class VouchMessage(Message):
         self.hash = hash
         self.signature = signature
 
-     def verify_participants(participant : str) -> bool:
+    def verify_participants(participant : str) -> bool:
         return self.sender == participant or self.receiver == participant
 
-    def hash(): -> str:
+    def hash() -> str:
         pass
 
     @classmethod
     def parse(cls, j : str):
         return VouchMessage(j['state'],j['clock'],j['sender'],j['receiver'], j['message'], j['nonce'], j['hash'], j['signature'])
 
-class Proto
+class Proto:
     @classmethod
     def parse(self, msg_str: str):
         if not msg_str:

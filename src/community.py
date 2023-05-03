@@ -4,6 +4,7 @@ import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
 from src.protocol import *
+from src.authentication import DirectApproximation
 
 class Community:
 
@@ -24,7 +25,6 @@ class Community:
 
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
-        self.password = config['SECURITY']['password']      
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
@@ -33,6 +33,9 @@ class Community:
 
         # TODO: move this to redis
         self.challenges = {}
+
+        # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
+        self.auth = DirectApproximation(config['SECURITY']['password'])
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -54,26 +57,20 @@ class Community:
         # return to the associate the public key plus the signature plus the session token
         return { 'public_key' : self.address, 'response' : signature }
 
-    def issue_association_token(self, password : str) -> bool:
+    def issue_association_token(self, data : str) -> bool:
         """Verifies association attempt from member and returns token"""
-        # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
+        token = None
+        
+        # repeats until token is not null and not already existing
+        while (not token) or (token or token in self.association_tokens):
+            token = self.auth.authenticate(data)
 
-        # if the password matches
-        if self.password == password:
-            
-            # generates random unique association token
-            token = None
-            while token == None or token in self.association_tokens:
-                random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
-                token = base58.b58encode(random_bytes).decode('utf-8')
+        # save token
+        if token:
             self.association_tokens.add(token)
 
-            # returns token as base58
-            return token
-
-        # password does not match. return none
-        else: 
-            return None
+        # returns either a token or none
+        return token
 
     def issue_authentication_challenge(self, token : str, public_key : str) -> str:
         """Verifies the key and issues a registration challenge"""
