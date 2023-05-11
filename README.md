@@ -6,7 +6,7 @@ API and Message Broker and Peer-to-Peer.
 python Community.py --pem config/key.pem
 ```
 
-## How 
+## How to register an account
 
 - Authenticate yourself to the server to get an association token (/auth/associate)
 - Combine the association token with a public key to get a challenge (/auth/challenge)
