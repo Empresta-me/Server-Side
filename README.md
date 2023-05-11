@@ -5,3 +5,9 @@ API and Message Broker and Peer-to-Peer.
 ```
 python Community.py --pem config/key.pem
 ```
+
+## How 
+
+- Authenticate yourself to the server to get an association token (/auth/associate)
+- Combine the association token with a public key to get a challenge (/auth/challenge)
+- Register an account or login with the issue challenged + a signature (/auth/register)
