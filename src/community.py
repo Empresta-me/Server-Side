@@ -63,8 +63,10 @@ class Community:
         token = None
         
         # repeats until token is not null and not already existing
-        while (not token) or (token or token in self.association_tokens):
+        while (not token) or (token and token in self.association_tokens):
+            print(token in self.association_tokens)
             token = self.auth.authenticate(data)
+            print(token in self.association_tokens)
 
         # save token
         if token:
