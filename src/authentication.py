@@ -3,6 +3,11 @@ import os # TODO explain
 
 class AuthenticationBase:
 
+    ASSOCIATION_TOKEN_LENGTH = 12
+
+    def set_association_token(self) -> None:
+        pass
+
     def generate_token(self) -> str:
         # generates random unique association token
         random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
@@ -13,8 +18,13 @@ class AuthenticationBase:
 class DirectApproximation(AuthenticationBase):
     """Strategy implementation for direct approximation (password)"""
 
-    def __init__(self, password : str):
+    def __init__(self, password : str, assoc_token_length):
         self.password = password
+        self.ASSOCIATION_TOKEN_LENGTH = assoc_token_length
+
+        print(self.ASSOCIATION_TOKEN_LENGTH)
+
+
 
     def authenticate(self, password : str) -> str:
         """Takes a password and, if valid, returns a token"""

@@ -35,7 +35,8 @@ class Community:
         self.challenges = {}
 
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
-        self.auth = DirectApproximation(config['SECURITY']['password'])
+        self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+
 
     def get_info(self) -> dict:
         """Shares community public information"""
