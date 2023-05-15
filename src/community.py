@@ -1,5 +1,6 @@
 from src.crypto import Crypto # cryptographic functions
 from src.pub_sub import pub_sub
+from src.redis_interface import Redis_interface
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
@@ -25,13 +26,17 @@ class Community:
         self.bio = config['DETAILS']['bio']               
         self.password = config['SECURITY']['password']      
 
+        
+
+        # TODO: move this to redis ✔️
+        self.challenges = Redis_interface()
+
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
-        # TODO: move this to redis
-        self.association_tokens = set()
+        self.association_tokens = Redis_interface(db=1) # set is called "association_tokens"
 
-        # TODO: move this to redis
-        self.challenges = {}
+        self.accounts = Redis_interface(db=2)
+
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -62,10 +67,10 @@ class Community:
             
             # generates random unique association token
             token = None
-            while token == None or token in self.association_tokens:
+            while token == None or self.association_tokens.isInSet("association_tokens", token):
                 random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
                 token = base58.b58encode(random_bytes).decode('utf-8')
-            self.association_tokens.add(token)
+            self.association_tokens.addToSet("association_tokens", token)
 
             # returns token as base58
             return token
@@ -80,12 +85,12 @@ class Community:
         # TODO: Redis - must not be alerady registered
         
         # token must be valid
-        # TODO: Redis
-        if token not in self.association_tokens:
+        # TODO: Redis ✔️
+        if self.association_tokens.isInSet("association_tokens", token) == False:
             return None
 
         # discard token
-        self.association_tokens.remove(token)
+        self.association_tokens.delFromSet("association_tokens", token)
 
         # verifies if the public key is valid
         if len(base58.b58decode(public_key)) == 33:
@@ -94,8 +99,8 @@ class Community:
             # NOTE: chould this allow a DoS attack? spamming for new challenges so that someone cant respond to the challenge
 
             # generate challenges and store it (tied to the public key)
-            challenge = bytearray(os.urandom(self.CHALLENGE_LENGTH))
-            self.challenges[public_key]= challenge
+            challenge = os.urandom(self.CHALLENGE_LENGTH)
+            self.challenges.set(public_key, challenge)
 
             # returns token as base58
             return base58.b58encode(challenge).decode('utf-8')
@@ -105,7 +110,6 @@ class Community:
 
     def register(self, account : dict) -> bool:
         """Registers an account if the challenge response was valid. Returns true or false"""
-
         # get fields from account
         try:
             # TODO: validate proper field length
@@ -120,12 +124,13 @@ class Community:
         # account is missing a field. registration failed
         except:
             return False
+        
 
         # there must be a valid challenge pending for this account
-        if public_key not in self.challenges.keys():
+        if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis
+        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -135,7 +140,9 @@ class Community:
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
-        # TODO: Redis - store account here
+        # TODO: Redis - store account here ️️
+        self.accounts.newHashSet(public_key, account) 
+
 
 
         # Subscribe to the users exchange (queue) 
@@ -149,10 +156,10 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if public_key not in self.challenges.keys():
+        if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis
+        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -168,10 +175,10 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if public_key not in self.challenges.keys():
+        if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis
+        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -192,10 +199,10 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if public_key not in self.challenges.keys():
+        if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis
+        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -204,7 +211,7 @@ class Community:
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
-        # TODO: Redis - if the private key is not is storage...
+        # TODO: Redis - if the private key is not in storage...
         if False:
             raise ResourceWarning(f'There were no private keys stored under the public key {public_key}.')
 
