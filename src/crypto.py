@@ -26,13 +26,9 @@ class Crypto:
         )
         
         return ( private_key, private_key.public_key())
-
     @classmethod
-    def sign(cls, private_key: str, data) -> bytes:
+    def sign(cls, private_key, data : bytes) -> bytes:
         """Returns signature of given data signed with given private key""" 
- 
-        if(type(data) != bytes):
-            data = data.encode()
     
         signature = private_key.sign(
             data,
@@ -42,12 +38,8 @@ class Crypto:
         return signature 
 
     @classmethod
-    def verify(cls, public_key, message, signature: bytes) -> bool:
+    def verify(cls, public_key, message : bytes, signature : bytes) -> bool:
         """Verifies if given message matches with given signature"""
-         
-
-        if(type(message) != bytes):
-            message = message.encode()
 
         try:  
             public_key.verify(signature, message, ec.ECDSA(hashes.SHA256()))
@@ -87,15 +79,14 @@ class Crypto:
         return serialized_public
     
     @classmethod
-    def load_key(cls, serialized_public) :
+    def load_key(cls, serialized_public : bytes) :
         """ Generate a public key Object based on the x and y points that defines them """ 
-        
         loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
         return loaded_public_key
     
     #NOTE: Cuurently Unneened 
     @classmethod
-    def publicKey_to_PEM(cls, public_key) :
+    def public_key_to_PEM(cls, public_key) :
         """ Generate a PEM file given a public key object """ 
         
         serialized_public = public_key.public_bytes(
@@ -104,9 +95,9 @@ class Crypto:
         )
         return serialized_public
     
-   #NOTE: Cuurently Unneened 
+   #NOTE: Cuurently unecessary
     @classmethod
-    def PEM_to_publicKey(cls, PEM_content) :
+    def PEM_to_public_key(cls, PEM_content : bytes) :
         """ Returns a public key object given a PEM content """ 
         
         loaded_public_key = serialization.load_pem_public_key(
@@ -115,19 +106,19 @@ class Crypto:
         return loaded_public_key
 
     @classmethod
-    def privateKey_to_PEM(cls, private_key) :
+    def private_key_to_PEM(cls, private_key : bytes) :
         """ Generate a PEM file given a private key object """ 
         
         serialized_private = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.BestAvailableEncryption(b'testpassword')
+            encryption_algorithm=serialization.BestAvailableEncryption(bytes('testpassword','utf-8'))
         )
 
         return serialized_private
      
     @classmethod
-    def PEM_to_privateKey(cls, PEM_content, password) :
+    def PEM_to_private_key(cls, PEM_content : bytes, password : bytes) :
         """ Returns a private key object given a PEM content """ 
         
         loaded_private_key = serialization.load_pem_private_key(
@@ -135,7 +126,6 @@ class Crypto:
             password=password,
         )
         return loaded_private_key
-
 
 """ 
 
@@ -157,9 +147,6 @@ new_new_P = Crypto.load_key(ser)
 
 # test the signature with the orivate key 
 print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
-
- 
-
 
 private_key, public_key = Crypto.asym_gen()
 
