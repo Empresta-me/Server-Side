@@ -6,4 +6,9 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="the community driver")
 
-    start_api()
+    # PEM pass
+    parser.add_argument("--pem", type=str, help="the password for the PEM File")
+
+    args = parser.parse_args()
+
+    start_api(args.pem)
