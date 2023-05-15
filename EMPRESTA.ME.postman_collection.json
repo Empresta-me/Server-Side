@@ -1,0 +1,215 @@
+{
+	"info": {
+		"_postman_id": "0b048b66-1772-4576-b746-5d30cec3a005",
+		"name": "EMPRESTA.ME Copy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23776688"
+	},
+	"item": [
+		{
+			"name": "meta",
+			"item": [
+				{
+					"name": "info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:5000/meta/info",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"meta",
+								"info"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "verify_key",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "challenge",
+								"value": "FyPXEsUKKmCkRH6YPcEYVr",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:5000/meta/verify_key",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"meta",
+								"verify_key"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "associate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "password",
+								"value": "batatinhas123",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:5000/auth/associate",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"auth",
+								"associate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "challenge",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "token",
+								"value": "N6HpbRUxJ5ugao1krSt8o1",
+								"type": "default"
+							},
+							{
+								"key": "public_key",
+								"value": "26HuBkrKLLMYTdDQ7ixsHu5PtznuecmAfZnG6PqmUm4PE",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:5000/auth/challenge",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"auth",
+								"challenge"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "acc",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"public_key\" : \"28jJYukg9v48AboHwNxqssrxbQ5ESb6u1KfD6tDSWdR6k\",\n    \"alias\" : \"Stinkwee Goatbottom\",\n    \"bio\" : \"Just a random schmuck\",\n    \"contact\" : \"donate@obama.org\",\n    \"custom\" : \"asdf\",\n    \"response\" : \"AN1rKqmZgvAuZddAg7NHNQvXdeuUfQ3Fi661wBC7HDRJCEoWG2rbVxM8GEm6373xvQGYJAugnopnuZDXzdJzjydDeJMgTpzy7\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:5000/acc/register",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"acc",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "public_key",
+								"value": "26HuBkrKLLMYTdDQ7ixsHu5PtznuecmAfZnG6PqmUm4PE",
+								"type": "default"
+							},
+							{
+								"key": "response",
+								"value": "iKx1CJMJknJWhtbAzFAYThv75YTnvFuF1iNBi3RXLfa2FMYBRWQYxMJyxNHTWwMZ8Q7eig3DGK7BpyK7XArgeKDBz4bQbS7Bzf",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:5000/acc/login",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "5000",
+							"path": [
+								"acc",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

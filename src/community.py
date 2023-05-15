@@ -1,52 +1,64 @@
 from src.crypto import Crypto # cryptographic functions
+from src.pub_sub import pub_sub
+from src.redis_interface import Redis_interface
 import base58 # for human friendly encoding
 import os # TODO explain
-import configparser
+import configparser # TODO explain
 
 class Community:
 
     CHALLENGE_LENGTH = 16
     ASSOCIATION_TOKEN_LENGTH = 16
 
-    def __init__(self, key_encryption_password):
+    def __init__(self, key_encryption_password : str):
+     
+        # gets public and private key from PEM file
+        with open("config/key.pem", "rb") as key_file: 
+            self.private_key = Crypto.PEM_to_private_key(key_file.read(), bytes(key_encryption_password,'utf-8'))
+            self.public_key =  self.private_key.public_key()
+        self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8')
 
+        # gets community data from config file
         config = configparser.ConfigParser()
-        config.read('config/config.ini')  
-          
-        private_file = open("config/private.PEM", "rb")  
-        self.private_key = Crypto.PEM_to_privateKey(private_file.read(), key_encryption_password)
-        self.public_key =  self.private_key.public_key()
-        self.key_encryption_password = key_encryption_password
-        private_file.close()
+        config.read('config/config.ini') 
 
-        self.address = base58.b58encode(Crypto.serialize(self.public_key)).decode('utf-8') # public key encoded as base58 string
+        self.title = config['DETAILS']['title']           
+        self.bio = config['DETAILS']['bio']               
+        self.password = config['SECURITY']['password']      
 
-        self.title = config['DETAILS']['title']           # self.title = "DETI Community"
-        self.bio = config['DETAILS']['bio']               # self.bio = "Univeristy of Aveiro's first EMPRESTA.ME community!"
+        
 
-        self.password = config['DETAILS']['password']     # self.password = "batatinhas123" 
+        # TODO: move this to redis ✔️
+        self.challenges = Redis_interface()
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
-        # TODO: move this to redis
-        self.association_tokens = set()
+        self.association_tokens = Redis_interface(db=1) # set is called "association_tokens"
 
-        # TODO: move this to redis
-        self.register_challenges = {}
+        self.accounts = Redis_interface(db=2)
+
 
     def get_info(self) -> dict:
         """Shares community public information"""
         return {'title' : self.title, 'bio' : self.bio, 'public_key' : self.address }
 
     def reply_challenge(self, challenge : str) -> dict:
-        """Answers to challenge with signature"""
+        """Answers to base58 challenge with signature"""
+
+        # challenge in bytes
+        challenge_b = base58.b58decode(bytes(challenge,'utf-8'))
+
+        # length should match
+        if len(challenge_b) != self.CHALLENGE_LENGTH:
+            return None
+
         # sign it and encode it to base58
-        signature = base58.b58encode(Crypto.sign(self.private_key, challenge)).decode('utf-8')
+        signature = base58.b58encode(Crypto.sign(self.private_key, challenge_b)).decode('utf-8')
 
         # return to the associate the public key plus the signature plus the session token
         return { 'public_key' : self.address, 'response' : signature }
 
-    def get_association_token(self, password : str) -> bool:
+    def issue_association_token(self, password : str) -> bool:
         """Verifies association attempt from member and returns token"""
         # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
 
@@ -55,21 +67,31 @@ class Community:
             
             # generates random unique association token
             token = None
-            while token == None or token in self.association_tokens:
+            while token == None or self.association_tokens.isInSet("association_tokens", token):
                 random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
                 token = base58.b58encode(random_bytes).decode('utf-8')
-            self.association_tokens.add(token)
+            self.association_tokens.addToSet("association_tokens", token)
 
             # returns token as base58
-            return base58.b58encode(token).decode('utf-8')
+            return token
 
         # password does not match. return none
         else: 
             return None
 
-    def get_register_challenge(self, public_key : str) -> bool:
-        """Verifies the key and issue a registration challenge"""
+    def issue_authentication_challenge(self, token : str, public_key : str) -> str:
+        """Verifies the key and issues a registration challenge"""
+
+        # TODO: Redis - must not be alerady registered
         
+        # token must be valid
+        # TODO: Redis ✔️
+        if self.association_tokens.isInSet("association_tokens", token) == False:
+            return None
+
+        # discard token
+        self.association_tokens.delFromSet("association_tokens", token)
+
         # verifies if the public key is valid
         if len(base58.b58decode(public_key)) == 33:
 
@@ -77,12 +99,127 @@ class Community:
             # NOTE: chould this allow a DoS attack? spamming for new challenges so that someone cant respond to the challenge
 
             # generate challenges and store it (tied to the public key)
-            random_bytes = bytearray(os.urandom(self.CHALLENGE_LENGTH))
-            challenge = base58.b58encode(random_bytes).decode('utf-8')
-            self.register_challenges[public_key]= challenge
+            challenge = os.urandom(self.CHALLENGE_LENGTH)
+            self.challenges.set(public_key, challenge)
 
             # returns token as base58
             return base58.b58encode(challenge).decode('utf-8')
         # invalid key, return nothing
         else:
             return None
+
+    def register(self, account : dict) -> bool:
+        """Registers an account if the challenge response was valid. Returns true or false"""
+        # get fields from account
+        try:
+            # TODO: validate proper field length
+            public_key = account['public_key']
+            alias = account['alias']
+            bio = account['bio']
+            contact = account['contact']
+            custom = account['custom']
+
+            # not part of the account, but necessary for registering
+            response = account['response']
+        # account is missing a field. registration failed
+        except:
+            return False
+        
+
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(public_key) == None:
+            return False
+
+        # TODO: Redis ✔️
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        # TODO: Redis - store account here ️️
+        self.accounts.newHashSet(public_key, account) 
+
+
+
+        # Subscribe to the users exchange (queue) 
+        pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
+
+        return True
+
+    def login(self, public_key : str, response : str) -> bool:
+        """Verifies that an account is registered and that the challenge response is valid"""
+
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(public_key) == None:
+            return False
+
+        # TODO: Redis ✔️
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        # if the challenge is valid, then the login is successful
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+        return Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8')))
+
+    def store_key(self, public_key : str, private_key : str, response : str) -> bool:
+        """Stores a (encrypted) version of an user's private key on their behalf if the user is registerd and the response matches the challange and public key"""
+
+        # TODO: validate size
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(public_key) == None:
+            return False
+
+        # TODO: Redis ✔️
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        # TODO: Redis - store key here
+
+        return True
+
+    def delete_key(self, public_key : str, private_key : str, response : str) -> bool:
+        """Stores a (encrypted) version of an user's private key on their behalf if the user is registerd and the response matches the challange and public key"""
+
+        # TODO: validate size
+
+        # TODO: Redis - public key must be registered
+
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(public_key) == None:
+            return False
+
+        # TODO: Redis ✔️
+        # gets challenge and removes it
+        challenge = self.challenges.pop(public_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        # TODO: Redis - if the private key is not in storage...
+        if False:
+            raise ResourceWarning(f'There were no private keys stored under the public key {public_key}.')
+
+        # TODO: Redis - remove key from storage
+
+        return True
+    
+    @staticmethod
+    def handle_message(channel, method, properties, body): 
+        print("Received message: {}".format(body.decode()), flush=True)
+        # do something with the message here
