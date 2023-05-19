@@ -22,7 +22,7 @@ class Crypto:
         
         # Generation 
         private_key = ec.generate_private_key(
-            ec.SECP256K1()
+            ec.SECP256R1()
         )
         
         return ( private_key, private_key.public_key())
@@ -63,7 +63,7 @@ class Crypto:
     def numbers_to_public_key(cls, x: int, y: int) -> str:
         """ Generate a public key Object based on the x and y points that defines them """ 
         
-        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP256K1()).public_key()
+        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP256R1()).public_key()
 
         return p_k
 
@@ -81,7 +81,7 @@ class Crypto:
     @classmethod
     def load_key(cls, serialized_public : bytes) :
         """ Generate a public key Object based on the x and y points that defines them """ 
-        loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
+        loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), serialized_public)
         return loaded_public_key
     
     #NOTE: Cuurently Unneened 
