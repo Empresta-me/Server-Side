@@ -123,7 +123,7 @@ class Crypto:
         
         loaded_private_key = serialization.load_pem_private_key(
             PEM_content, 
-            password=password,
+            password=None,
         )
         return loaded_private_key
 
