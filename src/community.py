@@ -45,7 +45,7 @@ class Community:
 
 
         # TODO: remove later, this is for testing
-        self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "2AZWwewaX1HNeFUQXG3GpvEALXTA55WkUTQuGM8857FDh", "receiver": "ffAyKifixHvVrFs5oT4n4eEXgBfYZPK32JUf64vzpWmj", "message": "Test message", "nonce": 87, "hash": "14U3EBRaVJ4TLUCS4v8h6EiZ6xUfamQ5gzoZMuSESLXq", "signature": "iKx1CJM1Lea31MCDMQomSyTBSUkGkJKCEeJkX4DsELjGVsVKFmevKNXU6J8xjW2YTG6x9gbeLB1Dd7mS6cf4PSP7E4z1sYpMSX"}'))
+        self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "ohpr4EZuEepgEQp6Ne897K8BTmPTXSE62Jo2ukGo9NyA", "receiver": "yLj9ATsVwBogUZEB2QTbPh7eu77QgppaiMQP97YVeq3L", "message": "Test message", "nonce": 8, "hash": "1VvbYB6G8hgciobvpceEE8boyxBNwUpGeYhiLRuTY3a", "signature": "AN1rKoYGLmkKX2iaLmLoZmLm79ADpP8kzjbuhMGJAqtFbHJuEqpUetgBvUbD88Nk8UnvuEUqjTkpXguqWZ1zRQ7MdD9HxSxhS"}'))
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -130,7 +130,6 @@ class Community:
         except:
             return False
         
-
         # there must be a valid challenge pending for this account
         if self.challenges.get(public_key) == None:
             return False
@@ -148,9 +147,7 @@ class Community:
         # TODO: Redis - store account here ️️
         self.accounts.newHashSet(public_key, account) 
 
-
-
-        # Subscribe to the users exchange (queue) 
+        # subscribe to the users exchange (queue) 
         pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
 
         return True
