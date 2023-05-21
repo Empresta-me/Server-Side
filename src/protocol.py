@@ -1,4 +1,7 @@
 import json # for serialization
+from src.crypto import Crypto # cryptographic functions
+import math
+import base58
 
 class Message:
     """Generic message"""
@@ -36,8 +39,19 @@ class VouchMessage(Message):
     def verify_participants(self, participant : str) -> bool:
         return self.sender == participant or self.receiver == participant
 
+    def verify_signature(self) -> bool:
+            return True
+
+    def verify_pow(self, zeros : int) -> bool:
+        b = math.ceil(zeros/8)
+
+        b_hash = base58.b58decode(bytes(self.hash,'utf-8'))
+
+        return "0"*zeros == "{:08b}".format(int(b_hash[0:b].hex(),16))[0:zeros]
+
     def hash() -> str:
-        pass
+        data = self.state+str(self.clock)+self.sender+self.receiver+self.message+str(self.nonce)
+        Crypto.hash(bytes(data,'utf-8'))
 
     @classmethod
     def parse(cls, j : str):

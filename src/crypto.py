@@ -12,7 +12,7 @@ class Crypto:
         
         digest = hashes.Hash(hashes.SHA256()) 
         digest.update(data)    
-        hash = digest.finalize().hex()
+        hash = digest.finalize()
         
         return hash 
 

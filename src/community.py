@@ -10,6 +10,7 @@ class Community:
 
     CHALLENGE_LENGTH = 16
     ASSOCIATION_TOKEN_LENGTH = 16
+    POW_LENGTH = 8
 
     def __init__(self, key_encryption_password : str):
      
@@ -38,7 +39,7 @@ class Community:
         self.auth = DirectApproximation(config['SECURITY']['password'])
 
         # TODO: remove later, this is for testing
-        self.handle_vouch(VouchMessage('FOR',0,'sender','receiver','message',0,'hash','signature'))
+        self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "2AZWwewaX1HNeFUQXG3GpvEALXTA55WkUTQuGM8857FDh", "receiver": "ffAyKifixHvVrFs5oT4n4eEXgBfYZPK32JUf64vzpWmj", "message": "Test message", "nonce": 87, "hash": "14U3EBRaVJ4TLUCS4v8h6EiZ6xUfamQ5gzoZMuSESLXq", "signature": "iKx1CJM1Lea31MCDMQomSyTBSUkGkJKCEeJkX4DsELjGVsVKFmevKNXU6J8xjW2YTG6x9gbeLB1Dd7mS6cf4PSP7E4z1sYpMSX"}'))
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -223,22 +224,25 @@ class Community:
 
     def handle_vouch(self, msg : VouchMessage):
         """Handles vouch messages"""
-        print(msg)
+        print("Verifying vouch message...")
+
+        valid = True
 
         if not msg.verify_general():
-            print("Failed general verification")
-            return
+            print("[x] Failed general verification")
+            valid = False
 
         if not msg.verify_participants(''):
-            print("Participants does not match")
-            return
+            print("[x] Participants does not match")
+            valid = False
 
-        if not verify_signature():
-            print("Signature does not match")
-            return
+        if not msg.verify_signature():
+            print("[x] Signature does not match")
+            valid = False
 
-        if not verify_pow(10):
-            print("Proof of work does not match")
-            return
+        if not msg.verify_pow(self.POW_LENGTH):
+            print("[x] Proof of work does not match")
+            valid = False
 
-        print('Message is valid!')
+        if valid:
+            print('[v] Message is valid!')
