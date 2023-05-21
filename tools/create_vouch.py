@@ -11,7 +11,7 @@ BYTES = math.ceil(ZEROS/8)
 
 def gen_key():
     private_key = ec.generate_private_key(
-        ec.SECP256K1()
+        ec.SECP256R1()
     )
     
     return private_key
