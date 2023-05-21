@@ -3,7 +3,7 @@ API and Message Broker and Peer-to-Peer.
 
 ## How to run
 ```
-python Community.py --pem config/key.pem
+python Community.py --pem testpassword
 ```
 
 ## How to register an account
