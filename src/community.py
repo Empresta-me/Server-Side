@@ -28,9 +28,6 @@ class Community:
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
 
-        
-
-        # TODO: move this to redis ✔️
         self.challenges = Redis_interface()
 
         # set of association tokens issued. removed as soon as they are used
@@ -38,7 +35,6 @@ class Community:
         self.association_tokens = Redis_interface(db=1) # set is called "association_tokens"
 
         self.accounts = Redis_interface(db=2)
-
 
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
         self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
@@ -72,13 +68,12 @@ class Community:
         token = None
         
         # repeats until token is not null and not already existing
-        while (not token) or (token in self.association_tokens):
+        while (not token) or (self.association_tokens.isInSet("association_tokens", token)):
             token = self.auth.authenticate(data)
-            print(token in self.association_tokens)
 
         # save token
         if token:
-            self.association_tokens.add(token)
+            self.association_tokens.addToSet("association_tokens",token)
 
         # returns either a token or none
         return token
@@ -90,7 +85,6 @@ class Community:
         # TODO: Redis - must not be alerady registered
         
         # token must be valid
-        # TODO: Redis ✔️
         if self.association_tokens.isInSet("association_tokens", token) == False:
             return None
 
@@ -134,7 +128,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -144,7 +137,7 @@ class Community:
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
-        # TODO: Redis - store account here ️️
+        # store new account in db
         self.accounts.newHashSet(public_key, account) 
 
         # subscribe to the users exchange (queue) 
@@ -161,7 +154,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -180,7 +172,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -204,7 +195,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
