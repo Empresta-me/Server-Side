@@ -53,8 +53,8 @@ def on_message(channel, method, properties, body):
     print("Received message: {}".format(body.decode()), flush=True)
     # do something with the message here
 
-pub_sub.start_listening("my_pub_key2", on_message)
-pub_sub.test_publish("my_pub_key2", "O/_\\O")
+#pub_sub.start_listening("my_pub_key2", on_message)
+#pub_sub.test_publish("my_pub_key2", "O/_\\O")
 
 
     

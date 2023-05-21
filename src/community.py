@@ -4,11 +4,14 @@ from src.redis_interface import Redis_interface
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
+from src.protocol import *
+from src.authentication import DirectApproximation
 
 class Community:
 
     CHALLENGE_LENGTH = 16
     ASSOCIATION_TOKEN_LENGTH = 16
+    POW_LENGTH = 8
 
     def __init__(self, key_encryption_password : str):
      
@@ -24,7 +27,6 @@ class Community:
 
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
-        self.password = config['SECURITY']['password']      
 
         
 
@@ -37,6 +39,12 @@ class Community:
 
         self.accounts = Redis_interface(db=2)
 
+
+        # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
+        self.auth = DirectApproximation(config['SECURITY']['password'])
+
+        # TODO: remove later, this is for testing
+        self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "2AZWwewaX1HNeFUQXG3GpvEALXTA55WkUTQuGM8857FDh", "receiver": "ffAyKifixHvVrFs5oT4n4eEXgBfYZPK32JUf64vzpWmj", "message": "Test message", "nonce": 87, "hash": "14U3EBRaVJ4TLUCS4v8h6EiZ6xUfamQ5gzoZMuSESLXq", "signature": "iKx1CJM1Lea31MCDMQomSyTBSUkGkJKCEeJkX4DsELjGVsVKFmevKNXU6J8xjW2YTG6x9gbeLB1Dd7mS6cf4PSP7E4z1sYpMSX"}'))
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -58,26 +66,21 @@ class Community:
         # return to the associate the public key plus the signature plus the session token
         return { 'public_key' : self.address, 'response' : signature }
 
-    def issue_association_token(self, password : str) -> bool:
+    def issue_association_token(self, data : str) -> bool:
         """Verifies association attempt from member and returns token"""
-        # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
+        token = None
+        
+        # repeats until token is not null and not already existing
+        while (not token) or (token in self.association_tokens):
+            token = self.auth.authenticate(data)
 
-        # if the password matches
-        if self.password == password:
-            
-            # generates random unique association token
-            token = None
-            while token == None or self.association_tokens.isInSet("association_tokens", token):
-                random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
-                token = base58.b58encode(random_bytes).decode('utf-8')
-            self.association_tokens.addToSet("association_tokens", token)
+        # save token
+        if token:
+            self.association_tokens.add(token)
 
-            # returns token as base58
-            return token
+        # returns either a token or none
+        return token
 
-        # password does not match. return none
-        else: 
-            return None
 
     def issue_authentication_challenge(self, token : str, public_key : str) -> str:
         """Verifies the key and issues a registration challenge"""
@@ -219,7 +222,37 @@ class Community:
 
         return True
     
-    @staticmethod
-    def handle_message(channel, method, properties, body): 
+    def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
-        # do something with the message here
+        msg_str = body.decode()
+        msg = Proto.parse(msg_str)
+
+        if msg.header == 'VOUCH':
+            self.handle(msg)
+
+    def handle_vouch(self, msg : VouchMessage):
+        """Handles vouch messages"""
+        print("Verifying vouch message...")
+
+        valid = True
+
+        if not msg.verify_general():
+            print("\t[!] Failed general verification")
+            valid = False
+
+        if not msg.verify_participants(''):
+            print("\t[!] Participants does not match")
+            valid = False
+
+        if not msg.verify_signature():
+            print("\t[!] Signature does not match")
+            valid = False
+
+        if not msg.verify_pow(self.POW_LENGTH):
+            print("\t[!] Proof of work does not match")
+            valid = False
+
+        if valid:
+            print('\t[v] Message is valid!')
+        else:
+            print('\t[x] Message is invalid!')

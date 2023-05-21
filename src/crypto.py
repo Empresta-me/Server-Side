@@ -12,7 +12,7 @@ class Crypto:
         
         digest = hashes.Hash(hashes.SHA256()) 
         digest.update(data)    
-        hash = digest.finalize().hex()
+        hash = digest.finalize()
         
         return hash 
 
@@ -151,10 +151,10 @@ print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', 
 private_key, public_key = Crypto.asym_gen()
 
 f = open("private.PEM", "wb")
-f.write(Crypto.privateKey_to_PEM(private_key))
+f.write(Crypto.private_key_to_PEM(private_key))
 f.close()
 
 f = open("public.PEM", "wb")
-f.write(Crypto.publicKey_to_PEM(public_key))    
+f.write(Crypto.public_key_to_PEM(public_key))    
 f.close()
 """
