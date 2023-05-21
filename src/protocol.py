@@ -36,6 +36,9 @@ class VouchMessage(Message):
         self.hash = hash
         self.signature = signature
 
+    def verify_general(self) -> bool:
+        return type(self.clock) is int
+
     def verify_participants(self, participant : str) -> bool:
         return self.sender == participant or self.receiver == participant
 

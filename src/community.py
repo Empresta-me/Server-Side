@@ -229,20 +229,22 @@ class Community:
         valid = True
 
         if not msg.verify_general():
-            print("[x] Failed general verification")
+            print("\t[!] Failed general verification")
             valid = False
 
         if not msg.verify_participants(''):
-            print("[x] Participants does not match")
+            print("\t[!] Participants does not match")
             valid = False
 
         if not msg.verify_signature():
-            print("[x] Signature does not match")
+            print("\t[!] Signature does not match")
             valid = False
 
         if not msg.verify_pow(self.POW_LENGTH):
-            print("[x] Proof of work does not match")
+            print("\t[!] Proof of work does not match")
             valid = False
 
         if valid:
-            print('[v] Message is valid!')
+            print('\t[v] Message is valid!')
+        else:
+            print('\t[x] Message is invalid!')
