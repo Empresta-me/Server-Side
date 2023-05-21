@@ -86,6 +86,7 @@ class Community:
         
         # token must be valid
         if self.association_tokens.isInSet("association_tokens", token) == False:
+            print(':(')
             return None
 
         # discard token
@@ -127,12 +128,17 @@ class Community:
         # there must be a valid challenge pending for this account
         if self.challenges.get(public_key) == None:
             return False
+        print('challenge:' + str(self.challenges.get(public_key)))
 
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
+
+        print('pk:' + str(base58.b58decode(bytes(public_key,'utf-8'))))
+        print('challenge: ' + str(challenge))
+        print('response: ' + str(base58.b58decode(bytes(response,'utf-8'))))
 
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
