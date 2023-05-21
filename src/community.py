@@ -37,6 +37,9 @@ class Community:
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
         self.auth = DirectApproximation(config['SECURITY']['password'])
 
+        # TODO: remove later, this is for testing
+        self.handle_vouch(VouchMessage('FOR',0,'sender','receiver','message',0,'hash','signature'))
+
     def get_info(self) -> dict:
         """Shares community public information"""
         return {'title' : self.title, 'bio' : self.bio, 'public_key' : self.address }
@@ -218,6 +221,24 @@ class Community:
         if msg.header == 'VOUCH':
             self.handle(msg)
 
-    def handle_vouch(msg : VouchMessage):
+    def handle_vouch(self, msg : VouchMessage):
         """Handles vouch messages"""
-        pass
+        print(msg)
+
+        if not msg.verify_general():
+            print("Failed general verification")
+            return
+
+        if not msg.verify_participants(''):
+            print("Participants does not match")
+            return
+
+        if not verify_signature():
+            print("Signature does not match")
+            return
+
+        if not verify_pow(10):
+            print("Proof of work does not match")
+            return
+
+        print('Message is valid!')

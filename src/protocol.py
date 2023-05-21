@@ -8,16 +8,16 @@ class Message:
     def __str__(self):
         return self.to_json()
 
-    def verify_general() -> bool:
+    def verify_general(self) -> bool:
         return True
     
-    def verify_participants(participant : str) -> bool:
+    def verify_participants(self, participant : str) -> bool:
         return True
 
-    def verify_signature() -> bool:
+    def verify_signature(self) -> bool:
         return True
 
-    def verify_pow() -> bool:
+    def verify_pow(self, zeros : int) -> bool:
         return True
 
 class VouchMessage(Message):
@@ -33,7 +33,7 @@ class VouchMessage(Message):
         self.hash = hash
         self.signature = signature
 
-    def verify_participants(participant : str) -> bool:
+    def verify_participants(self, participant : str) -> bool:
         return self.sender == participant or self.receiver == participant
 
     def hash() -> str:
