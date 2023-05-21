@@ -41,7 +41,8 @@ class Community:
 
 
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
-        self.auth = DirectApproximation(config['SECURITY']['password'])
+        self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+
 
         # TODO: remove later, this is for testing
         self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "2AZWwewaX1HNeFUQXG3GpvEALXTA55WkUTQuGM8857FDh", "receiver": "ffAyKifixHvVrFs5oT4n4eEXgBfYZPK32JUf64vzpWmj", "message": "Test message", "nonce": 87, "hash": "14U3EBRaVJ4TLUCS4v8h6EiZ6xUfamQ5gzoZMuSESLXq", "signature": "iKx1CJM1Lea31MCDMQomSyTBSUkGkJKCEeJkX4DsELjGVsVKFmevKNXU6J8xjW2YTG6x9gbeLB1Dd7mS6cf4PSP7E4z1sYpMSX"}'))
@@ -73,6 +74,7 @@ class Community:
         # repeats until token is not null and not already existing
         while (not token) or (token in self.association_tokens):
             token = self.auth.authenticate(data)
+            print(token in self.association_tokens)
 
         # save token
         if token:

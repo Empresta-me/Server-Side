@@ -13,8 +13,9 @@ class AuthenticationBase:
 class DirectApproximation(AuthenticationBase):
     """Strategy implementation for direct approximation (password)"""
 
-    def __init__(self, password : str):
+    def __init__(self, password : str, assoc_token_length):
         self.password = password
+        self.ASSOCIATION_TOKEN_LENGTH = assoc_token_length
 
     def authenticate(self, password : str) -> str:
         """Takes a password and, if valid, returns a token"""
