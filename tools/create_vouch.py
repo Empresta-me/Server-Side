@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
 import math
 import base58 # for human friendly encoding
+import json
 
 ZEROS = 8
 BYTES = math.ceil(ZEROS/8)
@@ -27,7 +28,6 @@ def get_public_key(public_key):
         encoding=serialization.Encoding.X962,
         format=serialization.PublicFormat.CompressedPoint
     ) 
-
     return serialized_public
 
 def sign(private_key, data : bytes) -> bytes:
@@ -74,6 +74,13 @@ print('\n\n\n')
 
 signature = sign(sender_key, hash)
 
+# TAMPER WITH HASH TO BREAK POW
+"""
+hash = b'FF' + hash[1:]
+binary_string = "{:08b}".format(int(hash[0:BYTES].hex(),16))[0:ZEROS]
+print(binary_string)
+"""
+
 msg = {'header':'VOUCH','state':state,'clock':clock,'sender':sender,'receiver':receiver,'message':message,'nonce':nonce,'hash':base58.b58encode(hash).decode('utf-8'),'signature':base58.b58encode(signature).decode('utf-8')}
 
-print(msg)
+print(json.dumps(msg))
