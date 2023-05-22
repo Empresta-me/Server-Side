@@ -6,6 +6,7 @@ import os # TODO explain
 import configparser # TODO explain
 from src.protocol import *
 from src.authentication import DirectApproximation
+from src.network import Network
 
 class Community:
 
@@ -38,6 +39,8 @@ class Community:
 
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
         self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+
+        self.network = Network()
 
         # TODO: Remove later
         pub_sub.start_listening(user_pub_key="ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", on_message=self.handle_message)
@@ -213,7 +216,7 @@ class Community:
         return True
 
     def get_topology(self, observer_address : str):
-        pass
+        return self.network.get_diagram(observer_address)
     
     def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
@@ -249,5 +252,6 @@ class Community:
 
         if valid:
             print('\t[v] Message is valid!')
+            self.network.new_vouch(msg)
         else:
             print('\t[x] Message is invalid!')
