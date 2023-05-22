@@ -53,7 +53,7 @@ def start_api(pem : str):
 
         # get token and challenge from headers
         token = request.headers.get("token", None)
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
 
         # let them know if a header is missing
         v = []
@@ -102,7 +102,7 @@ def start_api(pem : str):
     def login():
         """Verifies that your account is successfuly registered"""
         # get public key and challenge from headers
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing
@@ -127,8 +127,8 @@ def start_api(pem : str):
         """Stores an (encrypted) version of an user's private key on their behalf"""
 
         # gets challange response, public and (encrypted) private from headers
-        public_key = request.headers.get("public_key", None)
-        private_key = request.headers.get("private_key", None)
+        public_key = request.headers.get("public-key", None)
+        private_key = request.headers.get("private-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing
@@ -155,7 +155,7 @@ def start_api(pem : str):
         """Removes storaged key from the community db"""
 
         # gets challange response, public and (encrypted) private from headers
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing

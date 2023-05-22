@@ -95,7 +95,7 @@ class Crypto:
         )
         return serialized_public
     
-   #NOTE: Cuurently unecessary
+    #NOTE: Cuurently unecessary
     @classmethod
     def PEM_to_public_key(cls, PEM_content : bytes) :
         """ Returns a public key object given a PEM content """ 

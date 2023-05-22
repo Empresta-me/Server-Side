@@ -39,9 +39,9 @@ class Community:
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
         self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
 
+        # TODO: Remove later
+        pub_sub.start_listening(user_pub_key="ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", on_message=self.handle_message)
 
-        # TODO: remove later, this is for testing
-        self.handle_vouch(Proto.parse('{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "ohpr4EZuEepgEQp6Ne897K8BTmPTXSE62Jo2ukGo9NyA", "receiver": "yLj9ATsVwBogUZEB2QTbPh7eu77QgppaiMQP97YVeq3L", "message": "Test message", "nonce": 8, "hash": "1VvbYB6G8hgciobvpceEE8boyxBNwUpGeYhiLRuTY3a", "signature": "AN1rKoYGLmkKX2iaLmLoZmLm79ADpP8kzjbuhMGJAqtFbHJuEqpUetgBvUbD88Nk8UnvuEUqjTkpXguqWZ1zRQ7MdD9HxSxhS"}'))
 
     def get_info(self) -> dict:
         """Shares community public information"""
@@ -86,7 +86,6 @@ class Community:
         
         # token must be valid
         if self.association_tokens.isInSet("association_tokens", token) == False:
-            print(':(')
             return None
 
         # discard token
@@ -135,10 +134,6 @@ class Community:
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
-
-        print('pk:' + str(base58.b58decode(bytes(public_key,'utf-8'))))
-        print('challenge: ' + str(challenge))
-        print('response: ' + str(base58.b58decode(bytes(response,'utf-8'))))
 
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
@@ -226,7 +221,7 @@ class Community:
         msg = Proto.parse(msg_str)
 
         if msg.header == 'VOUCH':
-            self.handle(msg)
+            self.handle_vouch(msg)
 
     def handle_vouch(self, msg : VouchMessage):
         """Handles vouch messages"""
