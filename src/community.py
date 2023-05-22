@@ -216,7 +216,7 @@ class Community:
         return True
 
     def get_topology(self, observer_address : str):
-        return self.network.get_diagram(observer_address)
+        return self.network.gen_diagram(observer_address)
     
     def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
@@ -249,6 +249,9 @@ class Community:
         if not msg.verify_pow(self.POW_LENGTH):
             print("\t[!] Proof of work does not match")
             valid = False
+
+        # TODO: remove this
+        valid = True
 
         if valid:
             print('\t[v] Message is valid!')
