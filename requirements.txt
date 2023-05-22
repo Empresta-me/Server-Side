@@ -1,3 +1,4 @@
+cryptography
 flask
 base58
 pika
