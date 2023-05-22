@@ -35,7 +35,6 @@ class Network:
         receiver_id = msg.receiver
         clock = msg.clock
         polarity = msg.state == 'FOR' # TODO: account for neutral vouches
-        polarity = False # TODO: remove this!!
 
         # gets the node or adds it if it does not already exists
         node = None
