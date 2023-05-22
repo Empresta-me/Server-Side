@@ -216,6 +216,9 @@ class Community:
         # TODO: Redis - remove key from storage
 
         return True
+
+    def get_topology(self, observer_address : str):
+        pass
     
     def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
@@ -230,6 +233,8 @@ class Community:
         print("Verifying vouch message...")
 
         valid = True
+
+        # TODO: are accounts registered?
 
         if not msg.verify_general():
             print("\t[!] Failed general verification")

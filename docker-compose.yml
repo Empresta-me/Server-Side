@@ -19,4 +19,4 @@ services:
       - .:/app
     depends_on:
       - redis
-      - rabbot
+      - rabbit

@@ -1,10 +1,12 @@
 from src.community import Community
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import json
+import os
 
 def start_api(pem : str):
     community = Community(pem)
-    app = Flask("Community API")
+    template_dir = os.path.abspath('src/template')
+    app = Flask("Community API", template_folder=template_dir)
 
     @app.route("/meta/info", methods=['GET'])
     def get_info():
@@ -176,6 +178,21 @@ def start_api(pem : str):
             return "Key stored successful."
         else:
             return "Key storage failed. Public key / challenge response is invalid", 400
+
+    @app.route("/topology", methods=['GET'])
+    def serve_topology():
+        """Gets the community's public information"""
+        observer = request.headers.get("observer", None)
+
+        # TODO: remove this lmao
+        placeholder = "{'nodes': [{'name': 'Adam', 'id': 0, 'trustValue': '!', 'logo': ''}, {'name': 'Abel', 'id': 1, 'trustValue': 70.0, 'logo': 'https://raw.githubusercontent.com/Empresta-me/Nerwork-Visualization/main/logos/10.png'}, {'name': 'Cain', 'id': 2, 'trustValue': 70.0, 'logo': 'https://raw.githubusercontent.com/Empresta-me/Nerwork-Visualization/main/logos/10.png'}, {'name': 'Eve', 'id': 3, 'trustValue': 80.0, 'logo': 'https://raw.githubusercontent.com/Empresta-me/Nerwork-Visualization/main/logos/4.png'}, {'name': 'Peter', 'id': 4, 'trustValue': 35.0, 'logo': 'https://raw.githubusercontent.com/Empresta-me/Nerwork-Visualization/main/logos/8.png'}], 'links': [{'source': 'Adam', 'target': 'Abel', 'value': 1, 'message': 'I have my reasons'}, {'source': 'Adam', 'target': 'Cain', 'value': 1, 'message': 'Known him for a long time'}, {'source': 'Adam', 'target': 'Eve', 'value': 1, 'message': 'I have my reasons'}, {'source': 'Abel', 'target': 'Adam', 'value': 1, 'message': 'Trust him with my life'}, {'source': 'Abel', 'target': 'Cain', 'value': -1, 'message': 'Irresponsable'}, {'source': 'Abel', 'target': 'Eve', 'value': 1, 'message': 'Trust him with my life'}, {'source': 'Cain', 'target': 'Adam', 'value': 1, 'message': ''}, {'source': 'Cain', 'target': 'Abel', 'value': -1, 'message': 'I have my reasons'}, {'source': 'Cain', 'target': 'Eve', 'value': 1, 'message': 'Known him for a long time'}, {'source': 'Cain', 'target': 'Peter', 'value': 1, 'message': 'I have my reasons'}, {'source': 'Eve', 'target': 'Adam', 'value': 1, 'message': ''}, {'source': 'Eve', 'target': 'Abel', 'value': 1, 'message': ''}, {'source': 'Eve', 'target': 'Cain', 'value': 1, 'message': 'Known him for a long time'}, {'source': 'Peter', 'target': 'Cain', 'value': 1, 'message': 'I have my reasons'}]}"
+
+        if observer:
+            #return community.get_topology()
+            return render_template('visualizer.html', topology=placeholder)
+        else:
+            return render_template('visualizer.html', topology=placeholder)
+            #return "'Observer' header missing. Should the public key of the observer encoded in base58.", 400
 
     # TODO: Enable TLS for secure communication
     app.run(host='0.0.0.0')

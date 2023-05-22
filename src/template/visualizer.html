@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>EMPRESTA.ME-Network-Visualization</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+        <style>
+            body,h1 {font-family: "Raleway", sans-serif}
+            body, html {height: 100%}
+            .bgimg {
+            background-image: url('/w3images/forestbridge.jpg');
+            min-height: 100%;
+            background-position: center;
+            background-size: cover;
+            }
+            .links line {
+              stroke-opacity: 1;
+              /* stroke-width: 10px; */
+              stroke-width: 3px;
+            }
+
+            .nodes circle {
+              stroke: #fff;
+              /* stroke-width: 2.5px; */
+              stroke-width: 1.5px;
+              pointer-events: all;
+            }
+
+            .tooltip {
+              position: absolute;
+              text-align: center;
+              padding: 6px;
+              font: 12px sans-serif;
+              background: #ddd;
+              pointer-events: none;
+              border-radius: 5px;
+              pointer-events: none;
+              display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="bgimg w3-display-container w3-animate-opacity w3-text-black">
+          <div class="w3-display-topleft w3-padding-large w3-xlarge">
+              EMPRESTA.ME
+          </div>
+          <div id = "stats" class="w3-display-left w3-padding-large w3-xlarge" style="margin-left: 50px; max-width: 500px; word-wrap: break-word;">
+              <b>Reputation Scores</b>
+            <ul id="node-list"></ul>
+          </div>
+          <div class="w3-display-middle" >
+            <div id="container">
+              <svg id = "mySvg" width="960" height="600"></svg>
+            </div>
+          </div>
+        </div>
+    </body>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+
+    // Taken from flask
+    let res = "{{topology}}"
+    res = res.replaceAll('&#39;','"') // this is dumb but works
+    console.log(res)
+
+    //initilize svg or grab svg
+    var svg = d3.select("#mySvg");
+    var width = svg.attr("width");
+    var height = svg.attr("height");
+
+    //intialize data
+    var graph = JSON.parse(res);
+
+    var simulation = d3
+      .forceSimulation(graph.nodes)
+      .force(
+        "link",
+        d3
+          .forceLink()
+          .id(function(d) {
+            return d.name;
+          })
+          .links(graph.links)
+          //.distance(100) // length of links
+      )
+
+      .force("charge", d3.forceManyBody().strength(-30))
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .on("tick", ticked);
+
+    // Define the div for the tooltip
+    var tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    var link = svg
+      .append("g")
+      .attr("class", "links")
+      .selectAll("line")
+      .data(graph.links, function(d) { return d.source.id + "-" + d.target.id; }) // add identifier
+      
+      .enter()
+      .append("line")
+      .on("mouseover", function(d) {
+        tooltip.style("display", "block")
+        tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+        //tooltip.html(d.value)
+
+        // Check the boolean value of the other respective link
+        var otherLink = graph.links.filter(function(link) {
+          return link.source === d.target && link.target === d.source;
+        })[0];
+        var otherValue = otherLink.value;
+        //console.log(d.value)
+        //console.log(otherValue)
+        
+        // Set tooltip content based on the boolean value of the other link
+        if (d.value === 0 || otherValue === 0) {
+          tooltip.html(0);
+        } else {
+          tooltip.html(1);
+        }
+      
+
+        tooltip.style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+      })
+      // Add mouseout event listener to hide tooltip
+      .on("mouseout", function(d) {
+      tooltip.style("display", "none");
+      })
+      ;
+
+    var node = svg
+      .append("g")
+      .attr("class", "nodes")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter()
+      .append("circle")
+      .attr("r", 5)
+      /* .attr("r", 15) */ // ----- radius of the inner (collored) circle
+      .attr("fill", function(d) {
+        return "blue"
+      })
+  /* .append("image")  // TODO fix this
+  .attr("xlink:href", function(d) {
+    return d.logo;
+  }) */
+  .attr("width", 30) // adjust image width as needed
+  .attr("height", 30) // adjust image height as needed
+  .attr("x", -15) // adjust image x position as needed
+  .attr("y", -15) // adjust image y position as needed
+      .attr("pointer-events", "all") // enable mouse events on the circle
+      .call(
+        d3
+          .drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended)
+      )
+      .on("mouseenter", function(d) {
+        //console.log("mouseover")
+        tooltip.style("display", "block")
+        tooltip.transition()
+        .duration(200)
+        .style("opacity", .9);
+        tooltip.html(d.name + " - " + d.trustValue + " %")
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+      })
+      // Add mouseout event listener to hide tooltip
+      .on("mouseout", function(d) {
+      tooltip.style("display", "none");
+      })
+    ;
+
+
+    function updateStats(nodes) {
+      const nodeList = document.getElementById("node-list");
+      // clear previous list of nodes
+      nodeList.innerHTML = "";
+      // add each node to the list
+      nodes.forEach(node => {
+        const li = document.createElement("li");
+        li.textContent = `${node.name} - ${node.trustValue} %`;
+        nodeList.appendChild(li);
+      });
+    }
+
+
+    function ticked() {
+      link
+        .attr("x1", function(d) {
+          return d.source.x;
+        })
+        .attr("y1", function(d) {
+          return d.source.y;
+        })
+        .attr("x2", function(d) {
+          return d.target.x;
+        })
+        .attr("y2", function(d) {
+          return d.target.y;
+        })
+
+        .attr("stroke", function(d) {
+          // each link is duplicated so bob-alice may be 1 and alice-bob may be 0
+          // if either is 0, the link is red, otherwise its green
+          var oneOfThemIs0 = graph.links.find(function(l) {
+            return l.source.id === d.target.id && l.target.id === d.source.id && l.value !== d.value;
+          });
+          if (oneOfThemIs0) {
+            return "red";
+          } else if (d.value === 1) {
+            return "green";
+          } else {
+            return "red";
+          }
+        });
+
+      node
+        .attr("cx", function(d) {
+          return d.x;
+        })
+        .attr("cy", function(d) {
+          return d.y;
+        });
+
+
+      updateStats(graph.nodes); // call the function to update the stats div
+    }
+
+    function dragstarted(d) {
+      if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(d) {
+      if (tooltip.style("display") === "block") {
+        tooltip.style("display", "none");
+      }
+      d.fx = d3.event.x;
+      d.fy = d3.event.y;
+    }
+
+    function dragended(d) {
+      if (!d3.event.active) simulation.alphaTarget(0);
+      d.fx = null;
+      d.fy = null;
+    }
+
+</script>
