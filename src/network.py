@@ -63,7 +63,7 @@ class Network:
 
         self.update()
 
-    def create_adjacency_matrix(self) -> list[list[bool], bool]:
+    def create_adjacency_matrix(self) -> list:
         """Creates and adjancency matrix to be used by the tree search"""
 
         # creates an N*N matrix
