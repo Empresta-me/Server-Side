@@ -10,7 +10,7 @@ class pub_sub:
         print("\nStarting to listen to " + user_pub_key + "...")
 
         # create a connection to RabbitMQ server
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1'))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit'))
         channel = connection.channel()
 
         # declare the exchange to subscribe to
