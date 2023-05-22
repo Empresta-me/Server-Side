@@ -16,6 +16,23 @@ def gen_key():
     
     return private_key
 
+def PEM_to_private_key(PEM_content : bytes, password : bytes) :
+    loaded_private_key = serialization.load_pem_private_key(
+        PEM_content, 
+        password=password,
+    )
+    return loaded_private_key
+
+
+def serialize(public_key) -> bytes:
+    """ Generate a public key Object based on the x and y points that defines them """ 
+    
+    serialized_public = public_key.public_bytes(
+        encoding=serialization.Encoding.X962,
+        format=serialization.PublicFormat.CompressedPoint
+    ) 
+
+    return serialized_public
 def gen_hash(data: bytes) -> bytes:
     digest = hashes.Hash(hashes.SHA256()) 
     digest.update(data)    
@@ -54,8 +71,14 @@ def verify(public_key, message : bytes, signature : bytes) -> bool:
 
 state = 'FOR'
 clock = 0
-sender_key = gen_key()
-sender = base58.b58encode(get_public_key(sender_key.public_key())).decode('utf-8')
+
+sender_key = None
+sender = None
+with open("key.pem", "rb") as key_file: 
+    sender_key = PEM_to_private_key(key_file.read(), bytes('testpassword','utf-8'))
+    public_key =  sender_key.public_key()
+    sender = base58.b58encode(serialize(public_key)).decode('utf-8')
+
 receiver = base58.b58encode(get_public_key(gen_key().public_key())).decode('utf-8')
 message = 'Test message'
 
