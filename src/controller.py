@@ -179,7 +179,7 @@ def start_api(pem : str):
         else:
             return "Key storage failed. Public key / challenge response is invalid", 400
 
-    @app.route("/topology", methods=['GET'])
+    @app.route("/network/diagram", methods=['GET'])
     def serve_topology():
         """Gets the community's public information"""
         observer = request.args.get("observer", None)
@@ -190,6 +190,18 @@ def start_api(pem : str):
             return "Observer does not exist", 400
 
         return render_template('visualizer.html', topology=topology)
+
+    @app.route("/network/topology", methods=['GET'])
+    def serve_topology():
+        """Gets the community's public information"""
+        observer = request.args.get("observer", None)
+
+        topology = community.get_topology(observer)
+
+        if not topology:
+            return "Observer does not exist", 400
+
+        return topology
 
     # TODO: Enable TLS for secure communication
     app.run(host='0.0.0.0')
