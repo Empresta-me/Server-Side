@@ -4,11 +4,15 @@ from src.redis_interface import Redis_interface
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
+from src.protocol import *
+from src.authentication import DirectApproximation
+from src.network import Network
 
 class Community:
 
     CHALLENGE_LENGTH = 16
     ASSOCIATION_TOKEN_LENGTH = 16
+    POW_LENGTH = 8
 
     def __init__(self, key_encryption_password : str):
      
@@ -24,11 +28,7 @@ class Community:
 
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
-        self.password = config['SECURITY']['password']      
 
-        
-
-        # TODO: move this to redis ✔️
         self.challenges = Redis_interface()
 
         # set of association tokens issued. removed as soon as they are used
@@ -36,6 +36,16 @@ class Community:
         self.association_tokens = Redis_interface(db=1) # set is called "association_tokens"
 
         self.accounts = Redis_interface(db=2)
+
+        self.acc_info = {}
+
+        # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
+        self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+
+        self.network = Network()
+
+        # TODO: Remove later
+        pub_sub.start_listening(user_pub_key="ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", on_message=self.handle_message)
 
 
     def get_info(self) -> dict:
@@ -58,26 +68,21 @@ class Community:
         # return to the associate the public key plus the signature plus the session token
         return { 'public_key' : self.address, 'response' : signature }
 
-    def issue_association_token(self, password : str) -> bool:
+    def issue_association_token(self, data : str) -> bool:
         """Verifies association attempt from member and returns token"""
-        # NOTE: what's stopping a member that knows the password to generate a bunch of tokens and them share them around?
+        token = None
+        
+        # repeats until token is not null and not already existing
+        while (not token) or (self.association_tokens.isInSet("association_tokens", token)):
+            token = self.auth.authenticate(data)
 
-        # if the password matches
-        if self.password == password:
-            
-            # generates random unique association token
-            token = None
-            while token == None or self.association_tokens.isInSet("association_tokens", token):
-                random_bytes = bytearray(os.urandom(self.ASSOCIATION_TOKEN_LENGTH))
-                token = base58.b58encode(random_bytes).decode('utf-8')
-            self.association_tokens.addToSet("association_tokens", token)
+        # save token
+        if token:
+            self.association_tokens.addToSet("association_tokens",token)
 
-            # returns token as base58
-            return token
+        # returns either a token or none
+        return token
 
-        # password does not match. return none
-        else: 
-            return None
 
     def issue_authentication_challenge(self, token : str, public_key : str) -> str:
         """Verifies the key and issues a registration challenge"""
@@ -85,7 +90,6 @@ class Community:
         # TODO: Redis - must not be alerady registered
         
         # token must be valid
-        # TODO: Redis ✔️
         if self.association_tokens.isInSet("association_tokens", token) == False:
             return None
 
@@ -125,12 +129,11 @@ class Community:
         except:
             return False
         
-
         # there must be a valid challenge pending for this account
         if self.challenges.get(public_key) == None:
             return False
+        print('challenge:' + str(self.challenges.get(public_key)))
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -140,12 +143,10 @@ class Community:
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
-        # TODO: Redis - store account here ️️
+        # store new account in db
         self.accounts.newHashSet(public_key, account) 
 
-
-
-        # Subscribe to the users exchange (queue) 
+        # subscribe to the users exchange (queue) 
         pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
 
         return True
@@ -159,7 +160,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -178,7 +178,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -202,7 +201,6 @@ class Community:
         if self.challenges.get(public_key) == None:
             return False
 
-        # TODO: Redis ✔️
         # gets challenge and removes it
         challenge = self.challenges.pop(public_key)
 
@@ -218,8 +216,86 @@ class Community:
         # TODO: Redis - remove key from storage
 
         return True
-    
-    @staticmethod
-    def handle_message(channel, method, properties, body): 
+
+    def get_topology(self, observer_address : str):
+        return self.network.gen_diagram(observer_address)
+
+    def request_info(host_key : str, guest_key : str, response : str):
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(host_key) == None:
+            return False
+
+        # gets challenge and removes it
+        challenge = self.challenges.pop(host_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
+        # if not valid, deny request
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+        
+        if host_key in self.acc_info.get(guest_key,None):
+            # TODO actually get stuff from redis
+            return "{'todo':'this should be a account'}"
+        else:
+            return None
+
+    def permit_info(host_key : str, guest_key : str, response : str):
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(host_key) == None:
+            return False
+
+        # gets challenge and removes it
+        challenge = self.challenges.pop(host_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
+        # if not valid, deny request
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        if host_key not in self.acc_info.keys():
+            self.acc_info[host_key] = set([guest_key])
+        else:
+            self.acc_info[host_key].add(guest_key)
+
+    def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
-        # do something with the message here
+        msg_str = body.decode()
+        msg = Proto.parse(msg_str)
+
+        if msg.header == 'VOUCH':
+            self.handle_vouch(msg)
+
+    def handle_vouch(self, msg : VouchMessage):
+        """Handles vouch messages"""
+        print("Verifying vouch message...")
+
+        valid = True
+
+        # TODO: are accounts registered?
+
+        if not msg.verify_general():
+            print("\t[!] Failed general verification")
+            valid = False
+
+        if not msg.verify_participants(''):
+            print("\t[!] Participants does not match")
+            valid = False
+
+        if not msg.verify_signature():
+            print("\t[!] Signature does not match")
+            valid = False
+
+        if not msg.verify_pow(self.POW_LENGTH):
+            print("\t[!] Proof of work does not match")
+            valid = False
+
+        # TODO: remove this
+        valid = True
+
+        if valid:
+            print('\t[v] Message is valid!')
+            self.network.new_vouch(msg)
+        else:
+            print('\t[x] Message is invalid!')

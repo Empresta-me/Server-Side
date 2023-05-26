@@ -1,0 +1,25 @@
+services:
+  redis: 
+    hostname: redis
+    image: redislabs/redismod
+    container_name: redis
+    ports:
+      - '6379:6379' 
+  rabbit:
+    hostname: rabbit
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"
+  flask:
+    build: .
+    container_name: flask
+    restart: always
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - rabbit

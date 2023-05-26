@@ -1,2 +1,5 @@
+cryptography==39.0.1
 flask
 base58
+pika
+redis

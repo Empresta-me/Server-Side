@@ -1,10 +1,12 @@
 from src.community import Community
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 import json
+import os
 
 def start_api(pem : str):
     community = Community(pem)
-    app = Flask("Community API")
+    template_dir = os.path.abspath('src/template')
+    app = Flask("Community API", template_folder=template_dir)
 
     @app.route("/meta/info", methods=['GET'])
     def get_info():
@@ -51,7 +53,7 @@ def start_api(pem : str):
 
         # get token and challenge from headers
         token = request.headers.get("token", None)
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
 
         # let them know if a header is missing
         v = []
@@ -100,7 +102,7 @@ def start_api(pem : str):
     def login():
         """Verifies that your account is successfuly registered"""
         # get public key and challenge from headers
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing
@@ -125,8 +127,8 @@ def start_api(pem : str):
         """Stores an (encrypted) version of an user's private key on their behalf"""
 
         # gets challange response, public and (encrypted) private from headers
-        public_key = request.headers.get("public_key", None)
-        private_key = request.headers.get("private_key", None)
+        public_key = request.headers.get("public-key", None)
+        private_key = request.headers.get("private-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing
@@ -153,7 +155,7 @@ def start_api(pem : str):
         """Removes storaged key from the community db"""
 
         # gets challange response, public and (encrypted) private from headers
-        public_key = request.headers.get("public_key", None)
+        public_key = request.headers.get("public-key", None)
         response = request.headers.get("response", None)
 
         # let them know if a header is missing
@@ -176,6 +178,79 @@ def start_api(pem : str):
             return "Key stored successful."
         else:
             return "Key storage failed. Public key / challenge response is invalid", 400
+
+    @app.route("/acc/request-info", methods=['GET'])
+    def request_info():
+        host_key = request.headers.get("host-key", None)
+        guest_key = request.headers.get("guest-key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not host_key:
+            v.append("'host-key' header missing.")
+        if not guest_key:
+            v.append("'guest-key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        res = community.request_info(host_key, guest_key, response)
+
+        if res:
+            return res
+        else:
+            return "Incorrect signature / not permitted to access info", 400
+
+
+    @app.route("/acc/permit-info", methods=['POST'])
+    def permit_info():
+        host_key = request.headers.get("host-key", None)
+        guest_key = request.headers.get("guest-key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not host_key:
+            v.append("'host-key' header missing.")
+        if not guest_key:
+            v.append("'guest-key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        res = community.permit_info(host_key, guest_key, response)
+
+        if res:
+            return res
+        else:
+            return "Incorrect signature", 400
+
+    @app.route("/network/diagram", methods=['GET'])
+    def serve_diagram():
+        """Gets the community's public information"""
+        observer = request.args.get("observer", None)
+
+        topology = community.get_topology(observer)
+
+        if not topology:
+            return "Observer does not exist", 400
+
+        return render_template('visualizer.html', topology=topology)
+
+    @app.route("/network/topology", methods=['GET'])
+    def serve_topology():
+        """Gets the community's public information"""
+        observer = request.headers.get("observer", None)
+
+        topology = community.get_topology(observer)
+
+        if not topology:
+            return "Observer does not exist", 400
+
+        return topology
 
     # TODO: Enable TLS for secure communication
     app.run(host='0.0.0.0')

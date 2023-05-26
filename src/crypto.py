@@ -12,7 +12,7 @@ class Crypto:
         
         digest = hashes.Hash(hashes.SHA256()) 
         digest.update(data)    
-        hash = digest.finalize().hex()
+        hash = digest.finalize()
         
         return hash 
 
@@ -22,7 +22,7 @@ class Crypto:
         
         # Generation 
         private_key = ec.generate_private_key(
-            ec.SECP256K1()
+            ec.SECP256R1()
         )
         
         return ( private_key, private_key.public_key())
@@ -63,7 +63,7 @@ class Crypto:
     def numbers_to_public_key(cls, x: int, y: int) -> str:
         """ Generate a public key Object based on the x and y points that defines them """ 
         
-        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP256K1()).public_key()
+        p_k = ec.EllipticCurvePublicNumbers(x,y,ec.SECP256R1()).public_key()
 
         return p_k
 
@@ -81,7 +81,7 @@ class Crypto:
     @classmethod
     def load_key(cls, serialized_public : bytes) :
         """ Generate a public key Object based on the x and y points that defines them """ 
-        loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), serialized_public)
+        loaded_public_key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), serialized_public)
         return loaded_public_key
     
     #NOTE: Cuurently Unneened 
@@ -95,7 +95,7 @@ class Crypto:
         )
         return serialized_public
     
-   #NOTE: Cuurently unecessary
+    #NOTE: Cuurently unecessary
     @classmethod
     def PEM_to_public_key(cls, PEM_content : bytes) :
         """ Returns a public key object given a PEM content """ 
@@ -123,38 +123,36 @@ class Crypto:
         
         loaded_private_key = serialization.load_pem_private_key(
             PEM_content, 
-            password=password,
+            password=None,
         )
         return loaded_private_key
 
-""" 
+if __name__ == "__main__":
+    # Generate key pair 
+    (prv_k, pbl_k) = Crypto.asym_gen()
 
-# Generate key pair 
-(prv_k, pbl_k) = Crypto.asym_gen()
+    # Sign with private key
+    message = b'pls work! I rly need this'
+    signature = Crypto.sign(prv_k, message)
 
-# Sign with private key
-message = b'pls work! I rly need this'
-signature = Crypto.sign(prv_k, message)
+    # get the numbers & Generate public key
+    (x,y) = Crypto.get_public_numbers(pbl_k)
+    new_pbl_key = Crypto.numbers_to_public_key(x,y) 
 
-# get the numbers & Generate public key
-(x,y) = Crypto.get_public_numbers(pbl_k)
-new_pbl_key = Crypto.numbers_to_public_key(x,y) 
+    ser = Crypto.serialize(new_pbl_key)
+     
+    print(ser)
+    new_new_P = Crypto.load_key(ser)
 
-ser = Crypto.serialize(new_pbl_key)
- 
-print(ser)
-new_new_P = Crypto.load_key(ser)
+    # test the signature with the orivate key 
+    print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
 
-# test the signature with the orivate key 
-print("Sgnature: " + str(Crypto.verify(new_new_P, b'pls work! I rly need this', signature))) 
+    private_key, public_key = Crypto.asym_gen()
 
-private_key, public_key = Crypto.asym_gen()
+    f = open("private.PEM", "wb")
+    f.write(Crypto.private_key_to_PEM(private_key))
+    f.close()
 
-f = open("private.PEM", "wb")
-f.write(Crypto.privateKey_to_PEM(private_key))
-f.close()
-
-f = open("public.PEM", "wb")
-f.write(Crypto.publicKey_to_PEM(public_key))    
-f.close()
-"""
+    f = open("public.PEM", "wb")
+    f.write(Crypto.public_key_to_PEM(public_key))    
+    f.close()

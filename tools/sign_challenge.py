@@ -34,9 +34,19 @@ print('Public key: ' + address)
 
 if len(sys.argv) >= 2:
     print('Challenge: ' + sys.argv[1])
+    
+    data = base58.b58decode(bytes(sys.argv[1],'utf-8'))
+
     signature = private_key.sign(
-        bytes(sys.argv[1],'utf-8'),
+        data,
         ec.ECDSA(hashes.SHA256())
     )
 
     print('Signature: ' + base58.b58encode(signature).decode('utf-8'))
+
+
+    print('\n\n\n=======================')
+
+    #print('pk:' + str(base58.b58decode(bytes(public_key,'utf-8'))))
+    print('challenge: ' + str(bytes(sys.argv[1],'utf-8')))
+    print('response: ' + str(signature))
