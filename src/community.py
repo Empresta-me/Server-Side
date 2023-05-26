@@ -37,6 +37,8 @@ class Community:
 
         self.accounts = Redis_interface(db=2)
 
+        self.acc_info = {}
+
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
         self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
 
@@ -217,7 +219,46 @@ class Community:
 
     def get_topology(self, observer_address : str):
         return self.network.gen_diagram(observer_address)
-    
+
+    def request_info(host_key : str, guest_key : str, response : str):
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(host_key) == None:
+            return False
+
+        # gets challenge and removes it
+        challenge = self.challenges.pop(host_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
+        # if not valid, deny request
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+        
+        if host_key in self.acc_info.get(guest_key,None):
+            # TODO actually get stuff from redis
+            return "{'todo':'this should be a account'}"
+        eles:
+            return None
+
+    def permit_info(host_key : str, guest_key : str, response : str):
+        # there must be a valid challenge pending for this account
+        if self.challenges.get(host_key) == None:
+            return False
+
+        # gets challenge and removes it
+        challenge = self.challenges.pop(host_key)
+
+        # challenge, key and response should match
+        k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
+        # if not valid, deny request
+        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
+            return False
+
+        if host_key not in self.acc_info.keys():
+            self.acc_info[host_key] = set([guest_key])
+        else:
+            self.acc_info[host_key].add(guest_key)
+
     def handle_message(self, channel, method, properties, body): 
         print("Received message: {}".format(body.decode()), flush=True)
         msg_str = body.decode()

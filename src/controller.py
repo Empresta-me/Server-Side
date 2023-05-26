@@ -179,6 +179,55 @@ def start_api(pem : str):
         else:
             return "Key storage failed. Public key / challenge response is invalid", 400
 
+    @app.route("/acc/request-info", methods=['GET'])
+    def request_info():
+        host_key = request.headers.get("host-key", None)
+        guest_key = request.headers.get("guest-key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not host_key:
+            v.append("'host-key' header missing.")
+        if not guest_key:
+            v.append("'guest-key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        res = community.request_info(host_key, guest_key, response)
+
+        if res:
+            return res
+        else:
+            return "Incorrect signature / not permitted to access info", 400
+
+
+    @app.route("/acc/permit-info", methods=['POST'])
+    def permit_info():
+        host_key = request.headers.get("host-key", None)
+        guest_key = request.headers.get("guest-key", None)
+        response = request.headers.get("response", None)
+
+        # let them know if a header is missing
+        v = []
+        if not host_key:
+            v.append("'host-key' header missing.")
+        if not guest_key:
+            v.append("'guest-key' header missing.")
+        if not response:
+            v.append("'response' header missing.")
+        if v:
+            return '\n'.join(v), 400
+
+        res = community.permit_info(host_key, guest_key, response)
+
+        if res:
+            return res
+        else:
+            return "Incorrect signature", 400
+
     @app.route("/network/diagram", methods=['GET'])
     def serve_topology():
         """Gets the community's public information"""
