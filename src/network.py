@@ -171,12 +171,11 @@ class Network:
         def weight(depth) -> float:
             return 2**(-depth)
 
-
         # helper recursive tree search function
         def recursive_propagate(idx : int, polarity : int = 0, prev_idxs : list = [], depth : int = 0, had_against : bool = False):
 
             # get the connections of this node
-            connections = matrix[idx]
+            connections = self.matrix[idx]
 
             # update the depth if necessary
             if depth < nodes_depth[idx]:
@@ -238,10 +237,10 @@ class Network:
                 score = float(numerator)/float(denominator)
                 score *= weight(nodes_depth[idx] - 1) # apllies distance falloff
             else:
-                reputation_dict[id_order[idx]] = None
+                reputation_dict[self.ordered_nodes[idx]] = None
                 continue
 
-            reputation_dict[id_order[idx]] = score
+            reputation_dict[self.ordered_nodes[idx]] = score
 
         return reputation_dict
 
@@ -250,25 +249,27 @@ class Network:
         # if observer does not exist, don't bother
         if observer_id not in self.nodes.keys():
             #TODO: debug
-            observer_id = 
-            #return None
+            return None
 
         # get reputation dict
         reputation = self.calculate_reputation(observer_id, interest_dist)
 
-        def name_with_rep(name) -> str:
-            rep = reputation.get(name,None)
-
-            if rep != None:
-                return name + "\n" + str(100*rep)+"%"
-            else:
-                return name
+        print('rep : ' + str(reputation))
 
         nodes = []
         links = []
 
+        def get_name(name : str, observer : str) -> str:
+            if len(name) > 10:
+                pruned_name = name[0:10]+'...'
+
+            if name == observer:
+                return pruned_name + " (You)"
+            else:
+                return pruned_name
+
         for idx, name in enumerate(self.ordered_nodes):
-            nodes.append( {"name":f"{name_with_rep(name[0:4]+'...')}","id":idx} )
+            nodes.append( {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx} )
 
             connections = self.matrix[idx]
 
@@ -276,6 +277,7 @@ class Network:
                 if value == 0:
                     continue
 
-                links.append({"source":f"{name_with_rep(name[0:4]+'...')}","target":f"{name_with_rep(self.ordered_nodes[other_idx][0:4]+'...')}","value":value})
+                links.append({"source":get_name(name,observer_id),"target":get_name(self.ordered_nodes[other_idx], observer_id),"value":value})
             
+        print({"nodes":nodes,"links":links})
         return {"nodes":nodes,"links":links}
