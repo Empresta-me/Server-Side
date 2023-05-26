@@ -260,13 +260,10 @@ class Network:
         links = []
 
         def get_name(name : str, observer : str) -> str:
-            if len(name) > 10:
-                pruned_name = name[0:10]+'...'
-
             if name == observer:
-                return pruned_name + " (You)"
+                return "(You)"
             else:
-                return pruned_name
+                return name
 
         for idx, name in enumerate(self.ordered_nodes):
             nodes.append( {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx} )
