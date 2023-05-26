@@ -28,12 +28,6 @@ class Redis_interface:
         print("[POPPED] " , key , ": " ,  value)
         return value
 
-    def newHashSet(self, key, dic):
-        # TODO we may need to convert all keys in dic to String
-
-        self.redis_cli.hset(name= key, mapping= dic)
-        print("[CREATE NEW HASHSET] " , key, ": ", dic)
-
     def keys(self):
         return self.redis_cli.keys()
 
@@ -50,3 +44,19 @@ class Redis_interface:
         print("[CHECKED IF PART OF SET]", name, value, isIn)
         return isIn
 
+    def newHashSet(self, key, dic):
+        # TODO we may need to convert all keys in dic to String
+
+        self.redis_cli.hset(name= key, mapping= dic)
+        print("[CREATE NEW HASHSET] " , key, ": ", dic)
+
+
+    def getSingleValueFromHashSet(self, set_name, key):
+        value = self.redis_cli.hget(set_name, key)
+        print("[GETTED SINGLE VALUE FROM HASHSET]", set_name, key, value)
+        return value
+
+    def getWholeHashSet(self, set_name):
+        dic = self.redis_cli.hgetall(set_name)
+        print("[GETTED WHOLE HASHSET]", set_name, dic)
+        return dic
