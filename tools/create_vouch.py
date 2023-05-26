@@ -69,7 +69,7 @@ def verify(public_key, message : bytes, signature : bytes) -> bool:
     return True
      
 
-state = 'FOR'
+state = 'FALSE'
 clock = 0
 
 sender_key = None

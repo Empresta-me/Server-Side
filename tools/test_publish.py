@@ -23,6 +23,6 @@ class pub_sub:
 
 
 
-msg = '{"header": "VOUCH", "state": "FOR", "clock": 0, "sender": "ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", "receiver": "wGzeUWSGYpNcf8xNfQw2GJG1RnNidDY5YNn9aQFxUhXJ", "message": "Test message", "nonce": 258, "hash": "14YZBN8NVqJKyznFbvDuz6Gj1SC5ZDd6qSPX8WiwVxph", "signature": "381yXZGLpqGyEU5X7nRYknhUfxBg46nv8fSgGr6xRXbhJJGrudZBjXjVFt49tU3vWCizfuE9a8hoiWArieCzVDg6vCy3PYTj"}'
+msg = '{"header": "VOUCH", "state": "FALSE", "clock": 0, "sender": "ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", "receiver": "h8MUzTD7a67D4iVHWJudJ1LFhbtiojmLcKzd4W9Yka34", "message": "Test message", "nonce": 45, "hash": "1SJkHUCUgv2rCS5EQU8aBwad5nsjEQJs2LvkGz72Ra4", "signature": "381yXZQYZ5Vdq28XHkDYQeyNXiV95rfWLttzHpjyEu3rLApB272xWUqMm25MXfezAkFqgxs1pc1WedGQADQ9U5XBcunf1K5R"}'
 
 pub_sub.test_publish("ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", msg)

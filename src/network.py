@@ -156,17 +156,105 @@ class Network:
         # negative vouch connections are made if at least one of them vouches against the other_id
         return a_vouches_against or b_vouches_against
 
+    def calculate_reputation(self, observer_id : str, interest_dist : int) -> dict:
+
+        # gets the index of the observer from the order
+        observer_idx =self.ordered_nodes.index(observer_id)
+
+        
+        open_list = set([observer_idx]) # the nodes to be evaulated
+        influence = [ [] for i in range(len(self.nodes))] # the forces influencing the score of each node
+        nodes_depth = [ 1e7 for i in range (len(self.nodes)) ] # the minimum distance from the observer to each node
+
+
+        # function that transforms the depth of the node to it's weight
+        def weight(depth) -> float:
+            return 2**(-depth)
+
+
+        # helper recursive tree search function
+        def recursive_propagate(idx : int, polarity : int = 0, prev_idxs : list = [], depth : int = 0, had_against : bool = False):
+
+            # get the connections of this node
+            connections = matrix[idx]
+
+            # update the depth if necessary
+            if depth < nodes_depth[idx]:
+                nodes_depth[idx] = depth
+
+            # for each connection...
+            for other_idx, value in enumerate(connections):
+
+                # ignore if it's not a connection
+                if value == 0:
+                    continue
+
+                # there can only be one against connection in a chain. Stop if there's a second
+                if value == -1 and had_against:
+                    continue
+
+                # prevents backtrack / stay in place
+                if other_idx == idx or other_idx in prev_idxs:
+                    continue
+                
+                polarity_send = polarity # polarity gets inverted after vouch againts
+                against_send = had_against # if there has been a vouch against
+
+                # if the polarity has not been set (that is, we're evaluating the observer node still)
+                if polarity == 0:
+                    polarity_send = value # we set the polarity as the connection
+                elif value == -1:
+                    polarity_send = -1
+                    against_send = True
+
+                # influence it with your vouch
+                influence[other_idx].append( (depth, polarity_send) )
+
+                # propagate further
+                recursive_propagate(other_idx, polarity_send, prev_idxs + [idx], depth + 1, against_send)
+
+        recursive_propagate(observer_idx)
+
+        reputation_dict = {}
+
+        # calculate the reputation score of nodes from their influences
+        for idx, influences in enumerate(influence):
+
+            if idx == observer_idx:
+                continue
+
+            # if there are influences
+            if influences:
+
+                # calculates a weighted average of the influences
+                numerator = 0
+                denominator = 0
+
+                for depth, polarity in influences:
+                    numerator += (1 if polarity > 0 else 0) * weight(depth)
+                    #numerator += polarity * weight(depth)
+                    denominator += weight(depth)
+                
+                score = float(numerator)/float(denominator)
+                score *= weight(nodes_depth[idx] - 1) # apllies distance falloff
+            else:
+                reputation_dict[id_order[idx]] = None
+                continue
+
+            reputation_dict[id_order[idx]] = score
+
+        return reputation_dict
+
+
     def gen_diagram(self, observer_id, interest_dist : int = 3):
         # if observer does not exist, don't bother
         if observer_id not in self.nodes.keys():
-            #TODO: umcomment
-            pass
+            #TODO: debug
+            observer_id = 
             #return None
 
-        def calculate_reputation(observer_id : str, interest_dist : int) -> dict:
-            return {key:0.5 for key in self.nodes.keys()}
-
-        reputation = calculate_reputation(observer_id, interest_dist)
+        # get reputation dict
+        reputation = self.calculate_reputation(observer_id, interest_dist)
 
         def name_with_rep(name) -> str:
             rep = reputation.get(name,None)
