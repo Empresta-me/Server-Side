@@ -229,7 +229,7 @@ def start_api(pem : str):
             return "Incorrect signature", 400
 
     @app.route("/network/diagram", methods=['GET'])
-    def serve_topology():
+    def serve_diagram():
         """Gets the community's public information"""
         observer = request.args.get("observer", None)
 
@@ -243,7 +243,7 @@ def start_api(pem : str):
     @app.route("/network/topology", methods=['GET'])
     def serve_topology():
         """Gets the community's public information"""
-        observer = request.args.get("observer", None)
+        observer = request.headers.get("observer", None)
 
         topology = community.get_topology(observer)
 

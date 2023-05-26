@@ -237,7 +237,7 @@ class Community:
         if host_key in self.acc_info.get(guest_key,None):
             # TODO actually get stuff from redis
             return "{'todo':'this should be a account'}"
-        eles:
+        else:
             return None
 
     def permit_info(host_key : str, guest_key : str, response : str):
