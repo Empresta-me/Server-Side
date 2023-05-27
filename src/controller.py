@@ -199,7 +199,8 @@ def start_api(pem : str):
         res = community.request_info(host_key, guest_key, response)
 
         if res:
-            return res
+            #return res
+            return "{'a':'b'}"
         else:
             return "Incorrect signature / not permitted to access info", 400
 
@@ -223,8 +224,10 @@ def start_api(pem : str):
 
         res = community.permit_info(host_key, guest_key, response)
 
+        print('res ' + str(res))
+
         if res:
-            return res
+            return "Info sharing confirmed"
         else:
             return "Incorrect signature", 400
 
