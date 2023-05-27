@@ -45,18 +45,25 @@ class Redis_interface:
         return isIn
 
     def newHashSet(self, key, dic):
-        # TODO we may need to convert all keys in dic to String
+        """ stores a dictionary (account) referenced by "key\" """
+        # NOTE we may need to convert all keys in dic to String
 
         self.redis_cli.hset(name= key, mapping= dic)
         print("[CREATE NEW HASHSET] " , key, ": ", dic)
 
 
-    def getSingleValueFromHashSet(self, set_name, key):
-        value = self.redis_cli.hget(set_name, key)
-        print("[GETTED SINGLE VALUE FROM HASHSET]", set_name, key, value)
+    def getSingleValueFromHashSet(self, key, key_in_dic):
+        """ returns a single value from a dictionary (account)\n 
+        uses "key" to identify the dictionary, \n
+        and "key_in_dic" to locate the desired value within it"""
+
+        value = self.redis_cli.hget(key, key_in_dic)
+        print("[GETTED SINGLE VALUE FROM HASHSET]", key, key_in_dic, value)
         return value
 
-    def getWholeHashSet(self, set_name):
-        dic = self.redis_cli.hgetall(set_name)
-        print("[GETTED WHOLE HASHSET]", set_name, dic)
+    def getWholeHashSet(self, key):
+        """ returns a dictionary (account) referenced by "key\" """
+
+        dic = self.redis_cli.hgetall(key)
+        print("[GETTED WHOLE HASHSET]", key, dic)
         return dic
