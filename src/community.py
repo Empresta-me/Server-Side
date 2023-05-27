@@ -5,7 +5,7 @@ import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
 from src.protocol import *
-from src.authentication import DirectApproximation
+from src.authentication import *
 from src.network import Network
 
 class Community:
@@ -40,7 +40,8 @@ class Community:
         self.acc_info = {}
 
         # NOTE: Inês, é aqui que é definido se vai usar a strategy do IDP ou por senha
-        self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+        #self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
+        self.auth = IDP(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
 
         self.network = Network()
 
