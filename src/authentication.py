@@ -70,7 +70,7 @@ class IDP(AuthenticationBase):
             "grant_type": "authorization_code",
         }
 
-        response = requests.post(self.ua_oauth_token_uri, headers=headers, data=payload)
+        response = requests.post(url=self.ua_oauth_token_uri, headers=headers, data=payload)
 
         if response.status_code != 200:
             print(response.status_code)

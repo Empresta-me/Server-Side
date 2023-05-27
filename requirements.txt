@@ -3,3 +3,6 @@ flask
 base58
 pika
 redis
+python-dotenv
+requests
+jwt
