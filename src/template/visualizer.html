@@ -16,6 +16,7 @@
               font-family: "Raleway", sans-serif;
               /* font-family: 'Comfortaa', cursive; */
               margin: 0;      
+              overflow: hidden;
           }
             body, html {height: 100%}
             .links line {
@@ -27,7 +28,7 @@
               position: relative;
               height: 100%;
               background-color: #232323;
-              z-index: 1;
+              z-index: 2;
             }
 
             /* Styles for mobile devices */
@@ -48,12 +49,12 @@
                 margin-left: 50px; 
                 max-width: 500px; 
                 word-wrap: break-word;
-                z-index: 2; /* behind the graph */
+                z-index: 0; /* behind the graph */
               }
 
 
             .nodes circle {
-              stroke: #ff6201;
+              stroke: #ff8c00;
               stroke-width: 10px;
               pointer-events: all;
             }
@@ -73,7 +74,7 @@
     </head>
     <body>
         <div class="content w3-display-container w3-animate-opacity w3-text-white">
-          <div hidden id = "stats" class="w3-display-left w3-padding-large w3-xlarge stats" >
+          <div id = "stats" class="w3-display-left w3-padding-large w3-xlarge stats" >
             Network Stats
             <ul id="node-list"></ul>
           </div>
@@ -88,7 +89,21 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
       //initilize svg or grab svg
-      var svg = d3.select("#mySvg");
+      var svg = d3.select("#mySvg")
+        .call(d3.zoom()
+          .scaleExtent([1, Infinity]) // Set the minimum zoom level to 1
+          .on(
+            "zoom", function () {
+              svg.attr("transform", d3.event.transform)
+            }
+          )
+          .filter(
+            function () {
+              return d3.event.type === "wheel";
+            }
+          )
+        )
+        ;
       var width = svg.attr("width");
       var height = svg.attr("height");
 
