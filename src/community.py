@@ -235,7 +235,7 @@ class Community:
             nodes = [i['name'] for i in diagram['nodes']]
 
             for node in nodes:
-                info = permit_info(observer_address, node)
+                info = self.permit_info(observer_address, node)
                 if info:
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
