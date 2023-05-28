@@ -55,6 +55,3 @@ def on_message(channel, method, properties, body):
 
 #pub_sub.start_listening("my_pub_key2", on_message)
 #pub_sub.test_publish("my_pub_key2", "O/_\\O")
-
-
-    

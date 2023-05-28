@@ -239,9 +239,10 @@ def start_api(pem : str):
         topology = community.get_topology(observer)
 
         if not topology:
-            return "Observer does not exist", 400
-
-        return render_template('visualizer.html', topology=topology)
+            return render_template('visualizer.html')
+            #return "Observer does not exist", 400
+        else:
+            return render_template('visualizer.html', topology=topology)
 
     @app.route("/network/topology", methods=['GET'])
     def serve_topology():
