@@ -14,6 +14,11 @@ class Community:
     ASSOCIATION_TOKEN_LENGTH = 16
     POW_LENGTH = 8
 
+    ASSOCIATION_KEY = "ASSOCIATION"
+    CHALLENGE_KEY = "CHALLENGE"
+    ACCOUNT_KEY = "ACCOUNT"
+    ACCINFO_KEY = "ACCINFO"
+
     def __init__(self, key_encryption_password : str):
      
         # gets public and private key from PEM file
@@ -37,7 +42,7 @@ class Community:
 
         self.accounts = RedisInterface(db=2)
 
-        self.acc_info = {}
+        self.acc_info = RedisInterface(db=3)
 
         # NOTE: authentication is direct approx. by default
         self.auth = DirectApproximation(config['SECURITY']['password'], self.ASSOCIATION_TOKEN_LENGTH)
@@ -74,12 +79,12 @@ class Community:
         token = None
         
         # repeats until token is not null and not already existing
-        while (not token) or (self.association_tokens.isInSet("association_tokens", token)):
+        while (not token) or (self.association_tokens.sismember(self.ASSOCIATION_KEY, token)):
             token = self.auth.authenticate(data)
 
         # save token
         if token:
-            self.association_tokens.addToSet("association_tokens",token)
+            self.association_tokens.sadd(self.ASSOCIATION_KEY, token)
 
         # returns either a token or none
         return token
@@ -91,11 +96,11 @@ class Community:
         # TODO: Redis - must not be alerady registered
         
         # token must be valid
-        if self.association_tokens.isInSet("association_tokens", token) == False:
+        if self.association_tokens.sismember(self.ASSOCIATION_KEY, token) == False:
             return None
 
         # discard token
-        self.association_tokens.delFromSet("association_tokens", token)
+        self.association_tokens.srem(self.ASSOCIATION_KEY, token)
 
         # verifies if the public key is valid
         if len(base58.b58decode(public_key)) == 33:
@@ -105,7 +110,7 @@ class Community:
 
             # generate challenges and store it (tied to the public key)
             challenge = os.urandom(self.CHALLENGE_LENGTH)
-            self.challenges.set(public_key, challenge)
+            self.challenges.hset(self.CHALLENGE_KEY, public_key, challenge)
 
             # returns token as base58
             return base58.b58encode(challenge).decode('utf-8')
@@ -129,23 +134,24 @@ class Community:
         # account is missing a field. registration failed
         except:
             return False
-        
+
         # there must be a valid challenge pending for this account
-        if self.challenges.get(public_key) == None:
+        if not self.challenges.hexists(self.CHALLENGE_KEY, public_key):
             return False
-        print('challenge:' + str(self.challenges.get(public_key)))
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(public_key)
+        challenge = self.challenges.hget(self.CHALLENGE_KEY, public_key)
+        self.challenges.hdel(self.CHALLENGE_KEY, public_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
 
+        print(str(challenge) + ' = '+str(type(challenge)))
         if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
             return False
 
         # store new account in db
-        self.accounts.newHashSet(public_key, account) 
+        self.accounts.hset(self.ACCOUNT_KEY, public_key, str(account)) 
 
         # subscribe to the users exchange (queue) 
         pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
@@ -158,11 +164,12 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if self.challenges.get(public_key) == None:
+        if not self.challenges.hexists(self.CHALLENGE_KEY, public_key):
             return False
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(public_key)
+        challenge = self.challenges.hget(self.CHALLENGE_KEY, public_key)
+        self.challenges.hdel(self.CHALLENGE_KEY, public_key)
 
         # challenge, key and response should match
         # if the challenge is valid, then the login is successful
@@ -176,11 +183,11 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if self.challenges.get(public_key) == None:
+        if not self.challenges.get(public_key):
             return False
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(public_key)
+        challenge = self.challenges.hdel(self.CHALLENGE_KEY, public_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
@@ -199,11 +206,11 @@ class Community:
         # TODO: Redis - public key must be registered
 
         # there must be a valid challenge pending for this account
-        if self.challenges.get(public_key) == None:
+        if not self.challenges.hexists(self.CHALLENGE_KEY, public_key):
             return False
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(public_key)
+        challenge = self.challenges.hdel(self.CHALLENGE_KEY, public_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(public_key,'utf-8')))
@@ -229,7 +236,7 @@ class Community:
         """
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(host_key)
+        challenge = self.challenges.hdel(self.CHALLENGE_KEY, host_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
@@ -239,9 +246,16 @@ class Community:
             return False
         """
 
-        if host_key in self.acc_info.get(guest_key,None):
-            # TODO actually get stuff from redis
-            return self.accounts.getWholeHashSet(guest_key)
+        permit_list = self.acc_info.hget(self.ACCINFO_KEY, guest_key)
+
+        if not permit_list:
+            permit_list = set([])
+        else:
+            # turn the string into a set
+            permit_list = set(permit_list.decode('utf-8').split(','))
+
+        if host_key in permit_list:
+            return self.accounts.hget(self.ACCOUNT_KEY, guest_key).decode('utf-8')
         else:
             return None
 
@@ -253,7 +267,7 @@ class Community:
         """
 
         # gets challenge and removes it
-        challenge = self.challenges.pop(host_key)
+        challenge = self.challenges.hdel(self.CHALLENGE_KEY, host_key)
 
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
@@ -264,10 +278,17 @@ class Community:
             return False
         """
 
-        if host_key not in self.acc_info.keys():
-            self.acc_info[host_key] = set([guest_key])
+        permit_list = self.acc_info.hget(self.ACCINFO_KEY, host_key)
+
+        if not permit_list:
+            permit_list = set([])
         else:
-            self.acc_info[host_key].add(guest_key)
+            # turn the string into a set
+            permit_list = set(permit_list.decode('utf-8').split(','))
+
+        permit_list.add(guest_key)
+
+        self.acc_info.hset(self.ACCINFO_KEY, host_key, ','.join(permit_list))
 
         return True
 

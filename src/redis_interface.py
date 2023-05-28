@@ -13,10 +13,10 @@ class RedisInterface:
         self.redis_cli.hdel(key, field)
 
     def hexists(self, key : str, field : str):
-        self.redis_cli.hexists(key, field)
+        return self.redis_cli.hexists(key, field)
 
     def hget(self, key : str, field : str):
-        self.redis_cli.hget(key, field)
+        return self.redis_cli.hget(key, field)
 
     def hset(self, key : str, field : str, value : str):
         self.redis_cli.hset(key, field, value)
@@ -24,7 +24,7 @@ class RedisInterface:
     # SET
 
     def sismember(self, key : str, member : str):
-        self.redis_cli.sismember(key, member)
+        return self.redis_cli.sismember(key, member)
 
     def sadd(self, key : str, member : str):
         self.redis_cli.sadd(key, member)
