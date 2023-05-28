@@ -95,13 +95,10 @@
       var width = svg.attr("width");
       var height = svg.attr("height");
 
-      res = "{{topology}}"
-    res = res.replaceAll('&#34;','"') // this is dumb but works
-      //console.log(res)
-
       //intialize data
-      var graph = JSON.parse(res);
-      console.log(graph)
+      d3.json("data/test_small_data.json", function(data) {
+        var graph = data;
+        //console.log(graph.nodes);
 
         var simulation = d3
           .forceSimulation(graph.nodes)
@@ -239,8 +236,8 @@
 
         // Append imagesvar 
         var images = nodeEnter.append("image")
-          /*.attr("xlink:href", function(d) { 
-            return d.logo; })*/
+          .attr("xlink:href", function(d) { 
+            return d.logo; })
           .attr("transform", function(d) {
             var size = sizeScale(d.trustValue);
             return "translate(" + -size/15 + "," + -size/15 + ")";
@@ -280,7 +277,7 @@
           tooltip.style("display", "none");
           }); 
 
-          var names = nodeEnter.append("text")
+          var name = nodeEnter.append("text")
           .attr("text-anchor", "middle")
           .attr("dy", "-.45em")
           //.attr("dy", "2.5em")
@@ -309,7 +306,7 @@
           .attr("x", function(d) { return d.x - d.r;})
           .attr("y", function(d) { return d.y - d.r ;})
           ;
-          names
+          name
           .attr("x", function(d) { return d.x;})
           .attr("y", function(d) { return d.y - d.r ;})
           ;
@@ -375,5 +372,6 @@
           d.fx = null;
           d.fy = null;
         }
+      });
     
     </script>

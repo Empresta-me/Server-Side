@@ -234,9 +234,10 @@ def start_api(pem : str):
     def serve_diagram():
         """Gets the community's public information"""
         observer = request.args.get("observer", None)
-        print(observer)
-        topology = community.get_topology(observer)
-        print(topology)
+        #topology = community.get_topology(observer)
+
+        topology = '''{"nodes":[{"name":"Alice","id":1,"trustValue":90,"logo":"logos/1.png"},{"name":"Bob","id":2,"trustValue":82,"logo":"logos/2.png","is_user":true},{"name":"Chen","id":3,"trustValue":94,"logo":"logos/3.png"},{"name":"Dawg","id":4,"trustValue":91,"logo":"logos/4.png"},{"name":"Ethan","id":5,"trustValue":87,"logo":"logos/5.png"},{"name":"Frank","id":6,"trustValue":93,"logo":"logos/6.png"},{"name":"George","id":7,"trustValue":85,"logo":"logos/7.png"},{"name":"Hanes","id":8,"trustValue":75,"logo":"logos/8.png"},{"name":"Ivan","id":9,"trustValue":99,"logo":"logos/9.png"},{"name":"Juan","id":10,"trustValue":96,"logo":"logos/10.png"}],"links":[{"source":"Alice","target":"Bob","value":1,"message":"Heislikeabrothertome:)"},{"source":"Bob","target":"Alice","value":1,"message":"dont'treallytrustherbutshe'shot"},{"source":"Chen","target":"Bob","value":1,"message":"coolguy"},{"source":"Bob","target":"Chen","value":0,"message":"asshole"},{"source":"Chen","target":"Dawg","value":1,"message":"mydawg"},{"source":"Dawg","target":"Chen","value":1,"message":"bees"},{"source":"Hanes","target":"Frank","value":1,"message":"Gavemytoasterbackingoodconditions.10/10wouldlendagain👍"},{"source":"Frank","target":"Hanes","value":1,"message":"Hasanicetoaster!"},{"source":"George","target":"Hanes","value":0,"message":"Can'tbelievehefoldedthecornerofmybook😡😡"},{"source":"Hanes","target":"George","value":1,"message":"Boringbookhonestly"},{"source":"Dawg","target":"Ethan","value":0},{"source":"Ethan","target":"Dawg","value":0},{"source":"Ivan","target":"Chen","value":1},{"source":"Chen","target":"Ivan","value":0},{"source":"Juan","target":"Alice","value":1},{"source":"Alice","target":"Juan","value":0,"message":"hereturnedmybookalldirty>:("},{"source":"Juan","target":"Bob","value":1},{"source":"Bob","target":"Juan","value":1}]}'''
+
         if not topology:
             return render_template('visualizer.html')
             #return "Observer does not exist", 400

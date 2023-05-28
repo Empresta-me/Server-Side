@@ -231,7 +231,7 @@ class Community:
 
         res = str(diagram)
 
-        if use_aliases:
+        if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
 
             for node in nodes:
