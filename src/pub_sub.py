@@ -14,16 +14,12 @@ class pub_sub:
         channel = connection.channel()
 
         # declare the exchange to subscribe to
-        channel.exchange_declare(exchange=user_pub_key, exchange_type='fanout')
-
-        # declare a queue and bind it to the exchange
-        result = channel.queue_declare(queue='', exclusive=False)
-        queue_name = result.method.queue
-        channel.queue_bind(exchange=user_pub_key, queue=queue_name) 
+        channel.queue_declare(queue=user_pub_key, durable=True)
 
         # start consuming messages in a separate thread
         def consume():
-            channel.basic_consume(queue=queue_name, on_message_callback=on_message, auto_ack=True)
+            channel.basic_qos(prefetch_count=1)
+            channel.basic_consume(queue=user_pub_key, on_message_callback=on_message, auto_ack=True)
             channel.start_consuming()
 
         thread = threading.Thread(target=consume)

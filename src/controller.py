@@ -235,9 +235,9 @@ def start_api(pem : str):
     def serve_diagram():
         """Gets the community's public information"""
         observer = request.args.get("observer", None)
-
+        print(observer)
         topology = community.get_topology(observer)
-
+        print(topology)
         if not topology:
             return render_template('visualizer.html')
             #return "Observer does not exist", 400

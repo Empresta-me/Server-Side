@@ -14,9 +14,9 @@ class pub_sub:
         channel = connection.channel()
 
        # declare the exchange to publish to
-        channel.exchange_declare(exchange=user_pub_key, exchange_type='fanout')
+        channel.queue_declare(user_pub_key)
         
-        channel.basic_publish(exchange=user_pub_key, routing_key='', body=message)
+        channel.basic_publish(exchange='', routing_key='', body=message)
 
         # Close the connection
         connection.close() 

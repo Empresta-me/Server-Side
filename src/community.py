@@ -278,15 +278,17 @@ class Community:
 
         if msg.header == 'VOUCH':
             self.handle_vouch(msg)
+        print("Delivery tag:", method.delivery_tag)
+        #channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
 
     def handle_vouch(self, msg : VouchMessage):
         """Handles vouch messages"""
         print("Verifying vouch message...")
 
         valid = True
-
+        '''
         # TODO: are accounts registered?
-
+        
         if not msg.verify_general():
             print("\t[!] Failed general verification")
             valid = False
@@ -305,7 +307,7 @@ class Community:
 
         # TODO: remove this
         valid = True
-
+        '''
         if valid:
             print('\t[v] Message is valid!')
             self.network.new_vouch(msg)
