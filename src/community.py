@@ -1,6 +1,6 @@
 from src.crypto import Crypto # cryptographic functions
 from src.pub_sub import pub_sub
-from src.redis_interface import Redis_interface
+from src.redis_interface import RedisInterface
 import base58 # for human friendly encoding
 import os # TODO explain
 import configparser # TODO explain
@@ -29,13 +29,13 @@ class Community:
         self.title = config['DETAILS']['title']           
         self.bio = config['DETAILS']['bio']               
 
-        self.challenges = Redis_interface()
+        self.challenges = RedisInterface()
 
         # set of association tokens issued. removed as soon as they are used
         # NOTE: as the existing association tokens are stored in memory, server reboots will clean it. have to keep in mind when doing the frontend that "lost" tokens can exist
-        self.association_tokens = Redis_interface(db=1) # set is called "association_tokens"
+        self.association_tokens = RedisInterface(db=1) # set is called "association_tokens"
 
-        self.accounts = Redis_interface(db=2)
+        self.accounts = RedisInterface(db=2)
 
         self.acc_info = {}
 
