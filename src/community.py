@@ -7,6 +7,7 @@ import configparser # TODO explain
 from src.protocol import *
 from src.authentication import *
 from src.network import Network
+import json
 
 class Community:
 
@@ -225,8 +226,21 @@ class Community:
 
         return True
 
-    def get_topology(self, observer_address : str):
-        return self.network.gen_diagram(observer_address)
+    def get_topology(self, observer_address : str, use_aliases : bool = True):
+        diagram = self.network.gen_diagram(observer_address)
+
+        res = str(diagram)
+
+        if use_aliases:
+            nodes = [i['name'] for i in diagram['nodes']]
+
+            for node in nodes:
+                info = permit_info(observer_address, node)
+                if info:
+                    name = json.loads(info)['alias']
+                    res = res.replace(node,name)
+
+        return res
 
     def request_info(self, host_key : str, guest_key : str, response : str):
         # there must be a valid challenge pending for this account
@@ -246,6 +260,10 @@ class Community:
             return False
         """
 
+        return self.get_account_info(self, host_key, guest_key)
+
+
+    def get_account_info(self, host_key : str, guest_key : str) -> str:
         permit_list = self.acc_info.hget(self.ACCINFO_KEY, guest_key)
 
         if not permit_list:
@@ -258,6 +276,7 @@ class Community:
             return self.accounts.hget(self.ACCOUNT_KEY, guest_key).decode('utf-8')
         else:
             return None
+
 
     def permit_info(self, host_key : str, guest_key : str, response : str):
         # there must be a valid challenge pending for this account
