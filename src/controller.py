@@ -1,4 +1,5 @@
 from src.community import Community
+from protocol import Proto
 from flask import Flask, jsonify, request, render_template
 import json
 import os
@@ -254,6 +255,16 @@ def start_api(pem : str):
             return "Observer does not exist", 400
 
         return topology
+    
+    @app.route("/vouch", methods=['POST'])
+    def vouch():
+        """Gets the community's public information"""
+        vouch_json = request.data
+
+        msg = json.loads(Proto.parse(vouch_json))
+        community.handle_vouch(msg)
+
+        return "Vouch Sent!"
 
     # TODO: Enable TLS for secure communication
     app.run(host='0.0.0.0')

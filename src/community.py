@@ -52,7 +52,7 @@ class Community:
         self.network = Network()
 
         # TODO: Remove later
-        pub_sub.start_listening(user_pub_key="ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", on_message=self.handle_message)
+        #pub_sub.start_listening(user_pub_key="ndShu87QAz6cxEhFN2arSuKRmY9A848mMqwKnQYVuMwj", on_message=self.handle_message)
 
 
     def get_info(self) -> dict:
@@ -155,7 +155,7 @@ class Community:
         self.accounts.hset(self.ACCOUNT_KEY, public_key, str(account)) 
 
         # subscribe to the users exchange (queue) 
-        pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
+        #pub_sub.start_listening(user_pub_key=public_key, on_message=self.handle_message)
 
         return True
 
@@ -235,7 +235,7 @@ class Community:
             nodes = [i['name'] for i in diagram['nodes']]
 
             for node in nodes:
-                info = permit_info(observer_address, node)
+                info = self.permit_info(observer_address, node)
                 if info:
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
@@ -319,7 +319,7 @@ class Community:
         if msg.header == 'VOUCH':
             self.handle_vouch(msg)
         print("Delivery tag:", method.delivery_tag)
-        #channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
+        #channel.basic_nack(delivery_tag=method.delivery_tag, requeue=True) 
 
     def handle_vouch(self, msg : VouchMessage):
         """Handles vouch messages"""
