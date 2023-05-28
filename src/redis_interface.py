@@ -1,12 +1,38 @@
 import redis 
 
-class Redis_interface:
+class RedisInterface:
 
     def __init__(self, host= 'redis', port= 6379, db= 0):
 
         pool = redis.ConnectionPool(host=host, port=port, db=db)
         self.redis_cli = redis.Redis(connection_pool=pool)
 
+    # HASHSET
+
+    def hdel(self, key : str, field : str):
+        self.redis_cli.hdel(key, field)
+
+    def hexists(self, key : str, field : str):
+        return self.redis_cli.hexists(key, field)
+
+    def hget(self, key : str, field : str):
+        return self.redis_cli.hget(key, field)
+
+    def hset(self, key : str, field : str, value : str):
+        self.redis_cli.hset(key, field, value)
+
+    # SET
+
+    def sismember(self, key : str, member : str):
+        return self.redis_cli.sismember(key, member)
+
+    def sadd(self, key : str, member : str):
+        self.redis_cli.sadd(key, member)
+
+    def srem(self, key : str, member : str):
+        self.redis_cli.srem(key, member)
+
+    '''
     def set(self, key, value):
         self.redis_cli.set(key, value)
         
@@ -67,3 +93,4 @@ class Redis_interface:
         dic = self.redis_cli.hgetall(key)
         print("[GETTED WHOLE HASHSET]", key, dic)
         return dic
+    '''

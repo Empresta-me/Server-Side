@@ -1,5 +1,5 @@
 from src.protocol import *
-from src.redis_interface import Redis_interface
+import json
 
 class Node:
     def __init__(self, id : str):
