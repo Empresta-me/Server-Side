@@ -1,5 +1,5 @@
 from src.community import Community
-from protocol import Proto
+from src.protocol import Proto
 from flask import Flask, jsonify, request, render_template
 import json
 import os
@@ -260,8 +260,8 @@ def start_api(pem : str):
     def vouch():
         """Gets the community's public information"""
         vouch_json = request.data
-
-        msg = json.loads(Proto.parse(vouch_json))
+        print(type(vouch_json))
+        msg = Proto.parse(vouch_json)
         community.handle_vouch(msg)
 
         return "Vouch Sent!"
