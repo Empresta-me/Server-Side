@@ -169,7 +169,9 @@
             var otherValue = otherLink.value;
 
             var thisName = d.source.name;
-            var thisMessage = d.message.replace(/ /g, '&nbsp;');
+            console.log(thisMessage);
+            var thisMessage = d.message.replace(/ /g, '_');
+            console.log(thisMessage);
 
             var otherName = otherLink.source.name;
             var otherMessage = otherLink.message.replace(/ /g, '&nbsp;');
