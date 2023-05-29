@@ -89,9 +89,16 @@
 
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
+
+      // function used to compute sizes based on the user's trust value
+      var sizeScale = d3.scaleLinear()
+        .domain([0, 100]) // input (trust value)
+        .range([50, 80]); // output (radius)
+
       //initilize svg or grab svg
       var svg = d3.select("#mySvg");
 
+      // Create a zoom behavior
       var zoom = d3.zoom()
         .scaleExtent([1, 5]) // Set the minimum and maximum zoom level
         .on(
@@ -200,12 +207,7 @@
           .append("circle")
           .attr("r", function(d) {
             // Set the radius to outline the user
-            return d.is_observer ? 31 + d.reputation/15 : 15;
-            //return false ? 31 + d.reputation/800 : 15 + d.reputation/800;
-          })
-          .each(function(d) {
-            // set r as a property on the data object
-            d.r = 30;
+            return d.is_observer ? sizeScale(d.reputation)/2 : 0;
           })
 
           .attr("fill", function(d) {
@@ -249,11 +251,8 @@
           .attr("class", "node");
           
 
-        var sizeScale = d3.scaleLinear()
-          .domain([0, 100]) // input (trust value)
-          .range([40, 80]); // output (radius)
 
-        // Append imagesvar 
+        // Append images 
         var images = nodeEnter.append("image")
           .attr("xlink:href", function(d) { 
             let idx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 10
@@ -262,16 +261,13 @@
             var size = sizeScale(d.reputation);
             return "translate(" + -size/15 + "," + -size/15 + ")";
           })
-          // .attr("transform", function(d) {return d.is_observer ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
           .attr("width", function(d) {
             // Set the radius to outline the user
-            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("height", function(d) {
             
             // Set the radius to outline the user
-            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("pointer-events", "all") // enable mouse events on the image
@@ -344,12 +340,12 @@
 
         function ticked() {
           images
-          .attr("x", function(d) { return d.x - d.r;})
-          .attr("y", function(d) { return d.y - d.r ;})
+          .attr("x", function(d) { return d.x - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15;}) // i have no idea wtf is going on here
+          .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15 ;})
           ;
           names
           .attr("x", function(d) { return d.x;})
-          .attr("y", function(d) { return d.y - d.r ;})
+          .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 ;})
           ;
 
 
