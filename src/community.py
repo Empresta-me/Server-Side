@@ -278,12 +278,8 @@ class Community:
             return None
 
 
-    def permit_info(self, host_key : str, guest_key : str, response : str):
+    def permit_info(self, host_key : str, guest_key : str):
         # there must be a valid challenge pending for this account
-        """
-        if self.challenges.get(host_key) == None:
-            return False
-        """
 
         # gets challenge and removes it
         challenge = self.challenges.hdel(self.CHALLENGE_KEY, host_key)
@@ -291,11 +287,6 @@ class Community:
         # challenge, key and response should match
         k = Crypto.load_key(base58.b58decode(bytes(host_key,'utf-8')))
         # if not valid, deny request
-
-        """
-        if not Crypto.verify(k, challenge, base58.b58decode(bytes(response,'utf-8'))):
-            return False
-        """
 
         permit_list = self.acc_info.hget(self.ACCINFO_KEY, host_key)
 
