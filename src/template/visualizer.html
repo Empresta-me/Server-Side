@@ -204,8 +204,8 @@
           .append("circle")
           .attr("r", function(d) {
             // Set the radius to outline the user
-            return d.is_user ? 31 + d.trustValue/15 : 15;
-            //return false ? 31 + d.trustValue/800 : 15 + d.trustValue/800;
+            return d.is_user ? 31 + d.reputation/15 : 15;
+            //return false ? 31 + d.reputation/800 : 15 + d.reputation/800;
           })
           /* .attr("r", 30) */
           .each(function(d) {
@@ -232,7 +232,7 @@
             tooltip.transition()
             .duration(200)
             .style("opacity", .9);
-            tooltip.html(d.name + " - " + d.trustValue + " %")
+            tooltip.html(d.name + " - " + d.reputation + " %")
             .style("left", (d3.event.pageX) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
           })
@@ -263,20 +263,20 @@
           /*.attr("xlink:href", function(d) { 
             return d.logo; })*/
           .attr("transform", function(d) {
-            var size = sizeScale(d.trustValue);
+            var size = sizeScale(d.reputation);
             return "translate(" + -size/15 + "," + -size/15 + ")";
           })
-          // .attr("transform", function(d) {return d.is_user ? "translate(" + -60-(d.trustValue/4) + "," + -60-(d.trustValue/4) + ")" : "tralate";})
+          // .attr("transform", function(d) {return d.is_user ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
           .attr("width", function(d) {
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.trustValue/400): 60;
-            return sizeScale(d.trustValue);
+            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            return sizeScale(d.reputation);
           })
           .attr("height", function(d) {
             
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.trustValue/400): 60;
-            return sizeScale(d.trustValue);
+            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            return sizeScale(d.reputation);
           })
           .attr("pointer-events", "all") // enable mouse events on the image
           .call(
@@ -292,7 +292,7 @@
             tooltip.transition()
             .duration(200)
             .style("opacity", .9);
-            tooltip.html(d.name + " - " + d.trustValue + " %")
+            tooltip.html(d.name + " - " + d.reputation + " %")
             .style("left", (d3.event.pageX) + "px")
             .style("top", (d3.event.pageY - 28) + "px");
           })
@@ -319,7 +319,7 @@
           // add each node to the list
           nodes.forEach(node => {
             const li = document.createElement("li");
-            li.textContent = `${node.name} - ${node.trustValue} %`;
+            li.textContent = `${node.name} - ${node.reputation} %`;
             nodeList.appendChild(li);
           });
         }
