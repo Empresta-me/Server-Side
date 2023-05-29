@@ -134,7 +134,7 @@
               .links(graph.links)
           )
 
-          .force("charge", d3.forceCollide().radius(65).strength(0.1))
+          .force("charge", d3.forceCollide().radius(75).strength(0.1))
           .force("center", d3.forceCenter(width / 2, height / 2))
           .on("tick", ticked);
 
