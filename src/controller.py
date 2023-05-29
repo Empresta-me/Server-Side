@@ -223,7 +223,7 @@ def start_api(pem : str):
         if v:
             return '\n'.join(v), 400
 
-        res = community.permit_info(host_key, guest_key, response)
+        res = community.permit_info(host_key, guest_key)
 
         print('res ' + str(res))
 
