@@ -301,15 +301,38 @@
           tooltip.style("display", "none");
           }); 
 
-          var names = nodeEnter.append("text")
+          var name = nodeEnter.append("text")
           .attr("text-anchor", "middle")
-          .attr("dy", "-.45em")
+          .attr("dy", "2em")
           //.attr("dy", "2.5em")
           .attr("fill", "white")
           .attr("font-size", "20px")
           .attr("font-weight", "bold")
+          .style("cursor", "default") // Stop cursor icon from changing to text select
           .text(function(d) { return d.name; })
-          ;
+          .attr("pointer-events", "all") // enable mouse events on the text
+          .call(
+            d3
+            .drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+          )
+          .on("mouseenter", function(d) {
+            //console.log("mouseover")
+            tooltip.style("display", "block")
+            tooltip.transition()
+            .duration(200)
+            .style("opacity", .9);
+            tooltip.html(d.name + " - " + d.trustValue + " %")
+            .style("left", (d3.event.pageX) + "px")
+            .style("top", (d3.event.pageY - 28) + "px");
+          })
+          // Add mouseout event listener to hide tooltip
+          .on("mouseout", function(d) {
+          tooltip.style("display", "none");
+          })
+          ; 
 
 
         function updateStats(nodes) {
