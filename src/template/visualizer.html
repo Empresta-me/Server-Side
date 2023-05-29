@@ -89,21 +89,28 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
       //initilize svg or grab svg
-      var svg = d3.select("#mySvg")
-        .call(d3.zoom()
-          .scaleExtent([1, Infinity]) // Set the minimum zoom level to 1
-          .on(
-            "zoom", function () {
-              svg.attr("transform", d3.event.transform)
-            }
-          )
-          .filter(
-            function () {
-              return d3.event.type === "wheel";
-            }
-          )
+      var svg = d3.select("#mySvg");
+
+      var zoom = d3.zoom()
+        .scaleExtent([1, Infinity]) // Set the minimum zoom level to 1
+        .on(
+          "zoom", function () {
+            svg.attr("transform", d3.event.transform)
+          }
         )
-        ;
+        .filter(
+          function () {
+            return d3.event.type === "wheel";
+          }
+        );
+        
+      // Check if the device is mobile and enable touch events
+      if ('ontouchstart' in document.documentElement) {
+        svg.call(zoom.touchable(true));
+      } else {
+        svg.call(zoom);
+      } 
+
       var width = svg.attr("width");
       var height = svg.attr("height");
 
@@ -352,7 +359,7 @@
               } else if (d.value === 1) {
                 return "#00946c";
               } else {
-                return "#74261e";
+                return "#b53a2f";
               }
             });
 
