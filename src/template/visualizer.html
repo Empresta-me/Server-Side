@@ -117,6 +117,7 @@
 
       res = "{{topology}}"
       res = res.replaceAll('&#34;','"') // this is dumb but works
+      console.log(res)
 
       //intialize data
       var graph = JSON.parse(res);
@@ -199,7 +200,7 @@
           .append("circle")
           .attr("r", function(d) {
             // Set the radius to outline the user
-            return d.is_user ? 31 + d.reputation/15 : 15;
+            return d.is_observer ? 31 + d.reputation/15 : 15;
             //return false ? 31 + d.reputation/800 : 15 + d.reputation/800;
           })
           .each(function(d) {
@@ -255,21 +256,22 @@
         // Append imagesvar 
         var images = nodeEnter.append("image")
           .attr("xlink:href", function(d) { 
-            return "{{ url_for('static', filename='profile/2.png') }}"; })
+            let idx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 10
+            return "/static/profile/"+idx+".png"; })
           .attr("transform", function(d) {
             var size = sizeScale(d.reputation);
             return "translate(" + -size/15 + "," + -size/15 + ")";
           })
-          // .attr("transform", function(d) {return d.is_user ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
+          // .attr("transform", function(d) {return d.is_observer ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
           .attr("width", function(d) {
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("height", function(d) {
             
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("pointer-events", "all") // enable mouse events on the image
