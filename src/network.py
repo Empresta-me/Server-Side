@@ -269,7 +269,7 @@ class Network:
             node = {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx}
 
             if name == observer:
-                node['is_user'] = True
+                node['is_observer'] = True
 
             nodes.append( node )
 
