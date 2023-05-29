@@ -170,19 +170,18 @@
 
             var thisName = d.source.name;
             var thisMessage = d.message;
+
             var otherName = otherLink.source.name;
             var otherMessage = otherLink.message;
 
-            const wordsInThisMessage = thisMessage.split(" "); // stupid bugs require stupid fixes
-            const wordsInOtherMessage = otherMessage.split(" ");
-
             // display messages if they exist
             if (thisMessage && otherMessage)  {
-              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join(" ")) + "<br>" + otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join(" ")));
+              tooltip.html(
+              "<pre>" + thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage + "</pre>"); // <pre> preserves spaces
             } else if (otherMessage) {
-              tooltip.html(otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join(" "))); // it was not counting the spaces in the original string
+              tooltip.html( "<pre>" + otherName + " : " + otherMessage + "</pre>");
             } else if (thisMessage) {
-              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join(" ")));
+              tooltip.html( "<pre>" + thisName + " : " + thisMessage + "</pre>");
             } else{
               tooltip.html("");
             }
