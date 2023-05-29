@@ -123,7 +123,7 @@
       var height = svg.attr("height");
 
       res = "{{topology}}"
-      res = res.replaceAll('&#34;','"') // this is dumb but works
+      res = res.replaceAll('&#39;','"').replaceAll('&#34;','"') // this is dumb but works
       console.log(res)
 
       //intialize data
