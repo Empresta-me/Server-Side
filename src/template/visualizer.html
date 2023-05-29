@@ -93,7 +93,7 @@
       var svg = d3.select("#mySvg");
 
       var zoom = d3.zoom()
-        .scaleExtent([1, Infinity]) // Set the minimum zoom level to 1
+        .scaleExtent([1, 5]) // Set the minimum and maximum zoom level
         .on(
           "zoom", function () {
             svg.attr("transform", d3.event.transform)
@@ -116,12 +116,10 @@
       var height = svg.attr("height");
 
       res = "{{topology}}"
-    res = res.replaceAll('&#34;','"') // this is dumb but works
-      //console.log(res)
+      res = res.replaceAll('&#34;','"') // this is dumb but works
 
       //intialize data
       var graph = JSON.parse(res);
-      console.log(graph)
 
         var simulation = d3
           .forceSimulation(graph.nodes)
@@ -132,13 +130,11 @@
               .id(function(d) {
                 return d.name;
               })
-              .distance(100).strength(0.2)
+              .distance(140).strength(0.2)
               .links(graph.links)
-              //.distance(100) // length of links
           )
 
           .force("charge", d3.forceCollide().radius(55).strength(0.1))
-          /* .force("charge", d3.forceManyBody().strength(-100) )*/
           .force("center", d3.forceCenter(width / 2, height / 2))
           .on("tick", ticked);
 
@@ -160,7 +156,6 @@
             tooltip.transition()
             .duration(200)
             .style("opacity", .9);
-            //tooltip.html(d.value)
 
             // Check the boolean value of the other respective link
             var otherLink = graph.links.filter(function(link) {
@@ -207,7 +202,6 @@
             return d.is_user ? 31 + d.reputation/15 : 15;
             //return false ? 31 + d.reputation/800 : 15 + d.reputation/800;
           })
-          /* .attr("r", 30) */
           .each(function(d) {
             // set r as a property on the data object
             d.r = 30;
@@ -304,7 +298,6 @@
           var names = nodeEnter.append("text")
           .attr("text-anchor", "middle")
           .attr("dy", "2em")
-          //.attr("dy", "2.5em")
           .attr("fill", "white")
           .attr("font-size", "20px")
           .attr("font-weight", "bold")
@@ -319,7 +312,6 @@
             .on("end", dragended)
           )
           .on("mouseenter", function(d) {
-            //console.log("mouseover")
             tooltip.style("display", "block")
             tooltip.transition()
             .duration(200)
@@ -374,12 +366,12 @@
             })
 
             .attr("stroke", function(d) {
-              // each link is duplicated so bob-alice may be 1 and alice-bob may be 0
+              // each link is duplicated so bob->alice may be 1 and alice->bob may be 0
               // if either is 0, the link is red, otherwise its green
-              var oneOfThemIs0 = graph.links.find(function(l) {
+              var one_0_other_1 = graph.links.find(function(l) {
                 return l.source.id === d.target.id && l.target.id === d.source.id && l.value !== d.value;
               });
-              if (oneOfThemIs0) {
+              if (one_0_other_1) {
                 return "#b53a2f";
               } else if (d.value === 1) {
                 return "#00946c";
