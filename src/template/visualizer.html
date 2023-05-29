@@ -178,11 +178,11 @@
 
             // display messages if they exist
             if (thisMessage && otherMessage)  {
-              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join("&nbsp;")) + "<br>" + otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join("&nbsp;")));
+              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join(" ")) + "<br>" + otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join(" ")));
             } else if (otherMessage) {
-              tooltip.html(otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join("&nbsp;"))); // it was not counting the spaces in the original string
+              tooltip.html(otherName + " : " + (wordsInOtherMessage.slice(0, wordsInOtherMessage.length).join(" "))); // it was not counting the spaces in the original string
             } else if (thisMessage) {
-              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join("&nbsp;")));
+              tooltip.html(thisName + " : " + (wordsInThisMessage.slice(0, wordsInThisMessage.length).join(" ")));
             } else{
               tooltip.html("");
             }
