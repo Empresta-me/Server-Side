@@ -266,7 +266,12 @@ class Network:
                 return name
 
         for idx, name in enumerate(self.ordered_nodes):
-            nodes.append( {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx} )
+            node = {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx}
+
+            if name == observer:
+                node['is_user'] = True
+
+            nodes.append( node )
 
             connections = self.matrix[idx]
 
