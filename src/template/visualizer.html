@@ -169,17 +169,14 @@
             var otherValue = otherLink.value;
 
             var thisName = d.source.name;
-            console.log(thisMessage);
             var thisMessage = d.message.replace(/ /g, '_');
-            console.log(thisMessage);
 
             var otherName = otherLink.source.name;
             var otherMessage = otherLink.message.replace(/ /g, '&nbsp;');
 
             // display messages if they exist
             if (thisMessage && otherMessage)  {
-              tooltip.html(
-              "<pre style='margin: 0'>" + thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage + "</pre>"); // <pre> preserves spaces
+              tooltip.html(thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage);
             } else if (otherMessage) {
               tooltip.html( otherName + " : " + otherMessage );
             } else if (thisMessage) {
