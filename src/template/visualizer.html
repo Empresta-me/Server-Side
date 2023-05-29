@@ -255,7 +255,8 @@
         // Append imagesvar 
         var images = nodeEnter.append("image")
           .attr("xlink:href", function(d) { 
-            return "{{ url_for('static', filename='profile/2.png') }}"; })
+            let idx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 10
+            return "/static/profile/"+idx+".png"; })
           .attr("transform", function(d) {
             var size = sizeScale(d.reputation);
             return "translate(" + -size/15 + "," + -size/15 + ")";
