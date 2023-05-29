@@ -268,7 +268,7 @@ class Network:
         for idx, name in enumerate(self.ordered_nodes):
             node = {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx}
 
-            if name == observer:
+            if name == observer_id:
                 node['is_observer'] = True
 
             nodes.append( node )
