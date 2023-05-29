@@ -169,19 +169,19 @@
             var otherValue = otherLink.value;
 
             var thisName = d.source.name;
-            var thisMessage = d.message;
+            var thisMessage = d.message.replace(/ /g, '&nbsp;');
 
             var otherName = otherLink.source.name;
-            var otherMessage = otherLink.message;
+            var otherMessage = otherLink.message.replace(/ /g, '&nbsp;');
 
             // display messages if they exist
             if (thisMessage && otherMessage)  {
               tooltip.html(
-              "<pre>" + thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage + "</pre>"); // <pre> preserves spaces
+              "<pre style='margin: 0'>" + thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage + "</pre>"); // <pre> preserves spaces
             } else if (otherMessage) {
-              tooltip.html( "<pre>" + otherName + " : " + otherMessage + "</pre>");
+              tooltip.html( otherName + " : " + otherMessage );
             } else if (thisMessage) {
-              tooltip.html( "<pre>" + thisName + " : " + thisMessage + "</pre>");
+              tooltip.html(thisName + " : " + thisMessage );
             } else{
               tooltip.html("");
             }
