@@ -226,7 +226,7 @@ class Community:
 
         return True
 
-    def get_topology(self, observer_address : str, use_aliases : bool = True):
+    def get_topology(self, observer_address : str, use_aliases : bool = False):
         diagram = self.network.gen_diagram(observer_address)
 
         res = str(diagram)
