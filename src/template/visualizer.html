@@ -199,7 +199,7 @@
           .append("circle")
           .attr("r", function(d) {
             // Set the radius to outline the user
-            return d.is_user ? 31 + d.reputation/15 : 15;
+            return d.is_observer ? 31 + d.reputation/15 : 15;
             //return false ? 31 + d.reputation/800 : 15 + d.reputation/800;
           })
           .each(function(d) {
@@ -261,16 +261,16 @@
             var size = sizeScale(d.reputation);
             return "translate(" + -size/15 + "," + -size/15 + ")";
           })
-          // .attr("transform", function(d) {return d.is_user ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
+          // .attr("transform", function(d) {return d.is_observer ? "translate(" + -60-(d.reputation/4) + "," + -60-(d.reputation/4) + ")" : "tralate";})
           .attr("width", function(d) {
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("height", function(d) {
             
             // Set the radius to outline the user
-            //return d.is_user ? 60*(1 + d.reputation/400): 60;
+            //return d.is_observer ? 60*(1 + d.reputation/400): 60;
             return sizeScale(d.reputation);
           })
           .attr("pointer-events", "all") // enable mouse events on the image
