@@ -268,7 +268,7 @@ class Network:
         for idx, name in enumerate(self.ordered_nodes):
 
 
-            rep = reputation_dict.get(name,None)
+            rep = reputation.get(name,None)
             if not rep:
                 rep = 100 if name == observer else 0
             else:
