@@ -262,7 +262,7 @@ def start_api(pem : str):
     def vouch():
         """Gets the community's public information"""
         vouch_json = request.data
-        print(type(vouch_json))
+        print('vouch json' + str(vouch_json))
         msg = Proto.parse(vouch_json)
         community.handle_vouch(msg)
 

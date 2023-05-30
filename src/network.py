@@ -34,7 +34,8 @@ class Network:
         sender_id = msg.sender
         receiver_id = msg.receiver
         clock = msg.clock
-        polarity = msg.state == 'FOR' # TODO: account for neutral vouches
+        #polarity = msg.state == 'FOR' # TODO: account for neutral vouches
+        polarity = msg.state == 1 # TODO: account for neutral vouches
 
         # gets the node or adds it if it does not already exists
         node = None
