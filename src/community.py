@@ -236,12 +236,15 @@ class Community:
 
         nodes = [i['name'] for i in diagram['nodes']]
 
-        booboo = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat']
+        booboo = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat', 'Anonymous Dog', 'Anonymous Bunny', 'Anonymous Bird', 'Anonymous Penguin', 'Anonymous Hamster', 'Anonymous Shark']
         for node in nodes:
+
+            if node == observer_address:
+                continue
+
             name = booboo[0]
             booboo = booboo[1:]
             res = res.replace(node,name)
-
 
         if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
