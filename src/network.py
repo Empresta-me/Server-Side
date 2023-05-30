@@ -270,7 +270,7 @@ class Network:
 
             rep = reputation.get(name,None)
             if not rep:
-                rep = 100 if name == observer else 0
+                rep = 100 if name == observer_id else 0
             else:
                 rep *= 100
 
