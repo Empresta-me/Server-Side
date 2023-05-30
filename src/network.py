@@ -266,7 +266,15 @@ class Network:
                 return name
 
         for idx, name in enumerate(self.ordered_nodes):
-            node = {"name":get_name(name,observer_id),"reputation":reputation.get(name, '?'),"id":idx}
+
+
+            rep = reputation_dict.get(name,None)
+            if not rep:
+                rep = 100 if name == observer else 0
+            else:
+                rep *= 100
+
+            node = {"name":get_name(name,observer_id),"reputation":rep,"id":idx}
 
             if name == observer_id:
                 node['is_observer'] = 'true'
