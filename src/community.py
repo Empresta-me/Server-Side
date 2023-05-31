@@ -257,7 +257,7 @@ class Community:
 
         return res
 
-    def request_info(self, host_key : str, guest_key : str, response : str):
+    def request_info(self, host_key : str, guest_key : str):
         # there must be a valid challenge pending for this account
         """
         if self.challenges.get(host_key) == None:
