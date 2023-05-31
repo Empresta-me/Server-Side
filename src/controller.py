@@ -209,17 +209,14 @@ def start_api(pem : str):
     @app.route("/acc/permit-info", methods=['POST'])
     def permit_info():
         host_key = request.headers.get("host-key", None)
-        guest_key = request.headers.get("guest-key", None)
-        response = request.headers.get("response", None)
+        guest_key = request.headers.get("guest-key", None) 
 
         # let them know if a header is missing
         v = []
         if not host_key:
             v.append("'host-key' header missing.")
         if not guest_key:
-            v.append("'guest-key' header missing.")
-        if not response:
-            v.append("'response' header missing.")
+            v.append("'guest-key' header missing.") 
         if v:
             return '\n'.join(v), 400
 
