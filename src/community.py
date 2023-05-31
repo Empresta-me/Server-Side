@@ -275,7 +275,7 @@ class Community:
             return False
         """
 
-        return self.get_account_info(self, host_key, guest_key)
+        return self.get_account_info(host_key, guest_key)
 
 
     def get_account_info(self, host_key : str, guest_key : str) -> str:
