@@ -90,6 +90,93 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script>
 
+
+      const fs = require('fs');
+      const filePath = 'data/test_small_data.json';
+
+
+      res = "{{topology}}"
+      res = res.replaceAll('&#39;','"').replaceAll('&#34;','"') // this is dumb but works
+      console.log(res)
+
+      //intialize data
+      var graph = JSON.parse(res);
+
+
+
+      // function to add a node
+      function addNode(){
+        let node = randomNode();
+        randomLinks(node);
+      }
+
+
+      // function to generate a random node
+      function randomNode(){
+        
+        const randomName = Math.random().toString(36).substring(7);
+        const nextId = graph.nodes.length + 1;
+        const randomTrustValue = Math.floor(Math.random() * 100); // hopefully this is between 0 and 100 I cant be fucked to check
+        const imageIdx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 9 + 1
+        const randomLogo = "/static/profile/"+imageIdx+".png";
+
+        let node = {
+          name: randomName,
+          id: nextId,
+          trustValue: randomTrustValue,
+          logo: randomLogo
+        }
+        
+        graph.nodes.push(node);
+        return node;
+      }
+
+
+      function randomLinks(node){
+        const numberOfLinks = 1 + Math.floor(Math.random() * 4); // [1,4]
+
+        const connections = [];
+        const randomNodeId = node.id;
+        for (let i = 0; i< numberOfLinks; i++){
+          while (randomNodeId == node.id || connections.includes(randomNodeId)){ // random new node
+            const randomNodeId = Math.floor(Math.random() * graph.nodes.length);
+          }
+          connections.push(randomNodeId);
+          oldNode = graph.getElementById(randomNodeId);
+
+          // newNode -> oldNode
+          const source = node.name;
+          const target = oldNode.name;
+          const value = Math.floor(Marh.random() * 2); // [0,1]
+          let link = {
+            source: source,
+            target: target,
+            value: value
+          }
+          graph.links.push(link);
+
+          // oldNode -> newNode
+          source = oldNode.name;
+          target = node.name;
+          value = Math.floor(Marh.random() * 2); // [0,1]
+          link = {
+            source: source,
+            target: target,
+            value: value
+          }
+          graph.links.push(link);
+        }
+
+
+
+
+      }
+
+
+
+
+      // network visualization stuff ↓
+
       // function used to compute sizes based on the user's trust value
       var sizeScale = d3.scaleLinear()
         .domain([0, 100]) // input (trust value)
@@ -121,293 +208,287 @@
 
       var width = svg.attr("width");
       var height = svg.attr("height");
-
-      res = "{{topology}}"
-      res = res.replaceAll('&#39;','"').replaceAll('&#34;','"') // this is dumb but works
-      console.log(res)
-
-      //intialize data
-      var graph = JSON.parse(res);
-
-        var simulation = d3
-          .forceSimulation(graph.nodes)
-          .force(
-            "link",
-            d3
-              .forceLink()
-              .id(function(d) {
-                return d.name;
-              })
-              .distance(140).strength(0.2)
-              .links(graph.links)
-          )
-
-          .force("charge", d3.forceCollide().radius(75).strength(0.1))
-          .force("center", d3.forceCenter(width / 2, height / 2))
-          .on("tick", ticked);
-
-        // Define the div for the tooltip
-        var tooltip = d3.select("body").append("div")
-          .attr("class", "tooltip")
-          .style("opacity", 0);
-
-        var link = svg
-          .append("g")
-          .attr("class", "links")
-          .selectAll("line")
-          .data(graph.links, function(d) { return d.source.id + "-" + d.target.id; }) // add identifier
-          
-          .enter()
-          .append("line")
-          .on("mouseover", function(d) {
-            tooltip.style("display", "block")
-            tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-
-            // Check the boolean value of the other respective link
-            var otherLink = graph.links.filter(function(link) {
-              return link.source === d.target && link.target === d.source;
-            })[0];
-            var otherValue = otherLink.value;
-
-            var thisName = d.source.name;
-            var thisMessage = d.message;
-
-            var otherName = otherLink.source.name;
-            var otherMessage = otherLink.message;
-
-            // display messages if they exist
-            if (thisMessage && otherMessage)  {
-              tooltip.html(thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage);
-            } else if (otherMessage) {
-              tooltip.html( otherName + " : " + otherMessage );
-            } else if (thisMessage) {
-              tooltip.html(thisName + " : " + thisMessage );
-            } else{
-              tooltip.html("");
-            }
-            
-          
-            tooltip.style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-          })
-          // Add mouseout event listener to hide tooltip
-          .on("mouseout", function(d) {
-          tooltip.style("display", "none");
-          })
-        ;
-
-        var node = svg
-          .append("g")
-          .attr("class", "nodes")
-          .selectAll("circle")
-          .data(graph.nodes)
-          .enter()
-          .append("circle")
-          .attr("r", function(d) {
-            // Set the radius to outline the user
-            return d.is_observer ? sizeScale(d.reputation)/2 : 0;
-          })
-
-          .attr("fill", function(d) {
-            return "#eee"
-          })
-        
-
-          .attr("pointer-events", "all") // enable mouse events on the circle
-          .call(
-            d3
-              .drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended)
-          )
-          .on("mouseenter", function(d) {
-            //console.log("mouseover")
-            tooltip.style("display", "block")
-            tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-            tooltip.html(d.name + " - " + d.reputation.toFixed(2) + "%")
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-          })
-          // Add mouseout event listener to hide tooltip
-          .on("mouseout", function(d) {
-          tooltip.style("display", "none");
-          })
-        ;
-        
-
-
-        var nodeAgain = svg.selectAll("g.node")
-          .data(graph.nodes, function(d) { return d.id; });
-          
       
-      
-        // Enter any new nodes.
-        var nodeEnter = nodeAgain.enter().append("svg:g")
-          .attr("class", "node");
+
+      var simulation = d3
+        .forceSimulation(graph.nodes)
+        .force(
+          "link",
+          d3
+            .forceLink()
+            .id(function(d) {
+              return d.name;
+            })
+            .distance(140).strength(0.2)
+            .links(graph.links)
+        )
+
+        .force("charge", d3.forceCollide().radius(75).strength(0.1))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .on("tick", ticked);
+
+      // Define the div for the tooltip
+      var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+      var link = svg
+        .append("g")
+        .attr("class", "links")
+        .selectAll("line")
+        .data(graph.links, function(d) { return d.source.id + "-" + d.target.id; }) // add identifier
+        
+        .enter()
+        .append("line")
+        .on("mouseover", function(d) {
+          tooltip.style("display", "block")
+          tooltip.transition()
+          .duration(200)
+          .style("opacity", .9);
+
+          // Check the boolean value of the other respective link
+          var otherLink = graph.links.filter(function(link) {
+            return link.source === d.target && link.target === d.source;
+          })[0];
+          var otherValue = otherLink.value;
+
+          var thisName = d.source.name;
+          var thisMessage = d.message;
+
+          var otherName = otherLink.source.name;
+          var otherMessage = otherLink.message;
+
+          // display messages if they exist
+          if (thisMessage && otherMessage)  {
+            tooltip.html(thisName + " : " + thisMessage + "<br>" + otherName + " : " + otherMessage);
+          } else if (otherMessage) {
+            tooltip.html( otherName + " : " + otherMessage );
+          } else if (thisMessage) {
+            tooltip.html(thisName + " : " + thisMessage );
+          } else{
+            tooltip.html("");
+          }
           
+        
+          tooltip.style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        })
+        // Add mouseout event listener to hide tooltip
+        .on("mouseout", function(d) {
+        tooltip.style("display", "none");
+        })
+      ;
 
+      var node = svg
+        .append("g")
+        .attr("class", "nodes")
+        .selectAll("circle")
+        .data(graph.nodes)
+        .enter()
+        .append("circle")
+        .attr("r", function(d) {
+          // Set the radius to outline the user
+          return d.is_observer ? sizeScale(d.reputation)/2 : 0;
+        })
 
-        // Append images 
-        var images = nodeEnter.append("image")
-          .attr("xlink:href", function(d) { 
-            let idx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 9 + 1
-            return "/static/profile/"+idx+".png"; })
-          .attr("transform", function(d) {
-            var size = sizeScale(d.reputation);
-            return "translate(" + -size/15 + "," + -size/15 + ")";
-          })
-          .attr("width", function(d) {
-            // Set the radius to outline the user
-            return sizeScale(d.reputation);
-          })
-          .attr("height", function(d) {
-            
-            // Set the radius to outline the user
-            return sizeScale(d.reputation);
-          })
-          .attr("pointer-events", "all") // enable mouse events on the image
-          .call(
-            d3
-              .drag()
-              .on("start", dragstarted)
-              .on("drag", dragged)
-              .on("end", dragended)
-          )
-          .on("mouseenter", function(d) {
-            //console.log("mouseover")
-            tooltip.style("display", "block")
-            tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-            tooltip.html(d.name + " - " + d.reputation.toFixed(2) + "%")
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-          })
-          // Add mouseout event listener to hide tooltip
-          .on("mouseout", function(d) {
-          tooltip.style("display", "none");
-          }); 
+        .attr("fill", function(d) {
+          return "#eee"
+        })
+      
 
-          var names = nodeEnter.append("text")
-          .attr("text-anchor", "middle")
-          .attr("dy", "2em")
-          .attr("fill", "white")
-          .attr("font-size", "20px")
-          .attr("font-weight", "bold")
-          .style("cursor", "default") // Stop cursor icon from changing to text select
-          .text(function(d) { return d.name; })
-          .attr("pointer-events", "all") // enable mouse events on the text
-          .call(
-            d3
+        .attr("pointer-events", "all") // enable mouse events on the circle
+        .call(
+          d3
             .drag()
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended)
-          )
-          .on("mouseenter", function(d) {
-            tooltip.style("display", "block")
-            tooltip.transition()
-            .duration(200)
-            .style("opacity", .9);
-            tooltip.html(d.name + " - " + d.reputation.toFixed(2) + " %")
-            .style("left", (d3.event.pageX) + "px")
-            .style("top", (d3.event.pageY - 28) + "px");
-          })
-          // Add mouseout event listener to hide tooltip
-          .on("mouseout", function(d) {
-          tooltip.style("display", "none");
-          })
-          ; 
+        )
+        .on("mouseenter", function(d) {
+          //console.log("mouseover")
+          tooltip.style("display", "block")
+          tooltip.transition()
+          .duration(200)
+          .style("opacity", .9);
+          tooltip.html(d.name + " - " + d.reputation.toFixed(2) + "%")
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        })
+        // Add mouseout event listener to hide tooltip
+        .on("mouseout", function(d) {
+        tooltip.style("display", "none");
+        })
+      ;
+      
 
 
-        function updateStats(nodes) {
-          const nodeList = document.getElementById("node-list");
-          // clear previous list of nodes
-          nodeList.innerHTML = "";
-          // add each node to the list
-          nodes.forEach(node => {
-            const li = document.createElement("li");
-            li.textContent = `${node.name} - ${node.reputation}%`;
-            nodeList.appendChild(li);
+      var nodeAgain = svg.selectAll("g.node")
+        .data(graph.nodes, function(d) { return d.id; });
+        
+    
+    
+      // Enter any new nodes.
+      var nodeEnter = nodeAgain.enter().append("svg:g")
+        .attr("class", "node");
+        
+
+
+      // Append images 
+      var images = nodeEnter.append("image")
+        .attr("xlink:href", function(d) { 
+          let idx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 9 + 1
+          return "/static/profile/"+idx+".png"; })
+        .attr("transform", function(d) {
+          var size = sizeScale(d.reputation);
+          return "translate(" + -size/15 + "," + -size/15 + ")";
+        })
+        .attr("width", function(d) {
+          // Set the radius to outline the user
+          return sizeScale(d.reputation);
+        })
+        .attr("height", function(d) {
+          
+          // Set the radius to outline the user
+          return sizeScale(d.reputation);
+        })
+        .attr("pointer-events", "all") // enable mouse events on the image
+        .call(
+          d3
+            .drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+        )
+        .on("mouseenter", function(d) {
+          //console.log("mouseover")
+          tooltip.style("display", "block")
+          tooltip.transition()
+          .duration(200)
+          .style("opacity", .9);
+          tooltip.html(d.name + " - " + d.reputation.toFixed(2) + "%")
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        })
+        // Add mouseout event listener to hide tooltip
+        .on("mouseout", function(d) {
+        tooltip.style("display", "none");
+        }); 
+
+        var names = nodeEnter.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dy", "2em")
+        .attr("fill", "white")
+        .attr("font-size", "20px")
+        .attr("font-weight", "bold")
+        .style("cursor", "default") // Stop cursor icon from changing to text select
+        .text(function(d) { return d.name; })
+        .attr("pointer-events", "all") // enable mouse events on the text
+        .call(
+          d3
+          .drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended)
+        )
+        .on("mouseenter", function(d) {
+          tooltip.style("display", "block")
+          tooltip.transition()
+          .duration(200)
+          .style("opacity", .9);
+          tooltip.html(d.name + " - " + d.reputation.toFixed(2) + " %")
+          .style("left", (d3.event.pageX) + "px")
+          .style("top", (d3.event.pageY - 28) + "px");
+        })
+        // Add mouseout event listener to hide tooltip
+        .on("mouseout", function(d) {
+        tooltip.style("display", "none");
+        })
+        ; 
+
+
+      function updateStats(nodes) {
+        const nodeList = document.getElementById("node-list");
+        // clear previous list of nodes
+        nodeList.innerHTML = "";
+        // add each node to the list
+        nodes.forEach(node => {
+          const li = document.createElement("li");
+          li.textContent = `${node.name} - ${node.reputation}%`;
+          nodeList.appendChild(li);
+        });
+      }
+
+
+      function ticked() {
+        images
+        .attr("x", function(d) { return d.x - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15;}) // i have no idea wtf is going on here
+        .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15 ;})
+        ;
+        names
+        .attr("x", function(d) { return d.x;})
+        .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 ;})
+        ;
+
+
+        link
+          .attr("x1", function(d) {
+            return d.source.x;
+          })
+          .attr("y1", function(d) {
+            return d.source.y;
+          })
+          .attr("x2", function(d) {
+            return d.target.x;
+          })
+          .attr("y2", function(d) {
+            return d.target.y;
+          })
+
+          .attr("stroke", function(d) {
+            // each link is duplicated so bob->alice may be 1 and alice->bob may be 0
+            // if either is 0, the link is red, otherwise its green
+            var one_0_other_1 = graph.links.find(function(l) {
+              return l.source.id === d.target.id && l.target.id === d.source.id && l.value !== d.value;
+            });
+            if (one_0_other_1) {
+              return "#b53a2f";
+            } else if (d.value === 1) {
+              return "#00946c";
+            } else {
+              return "#b53a2f";
+            }
           });
+
+        node
+          .attr("cx", function(d) {
+            return d.x;
+          })
+          .attr("cy", function(d) {
+            return d.y;
+          });
+
+
+        updateStats(graph.nodes); // call the function to update the stats div
+      }
+
+      function dragstarted(d) {
+        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(d) {
+        if (tooltip.style("display") === "block") {
+          tooltip.style("display", "none");
         }
+        d.fx = d3.event.x;
+        d.fy = d3.event.y;
+      }
 
-
-        function ticked() {
-          images
-          .attr("x", function(d) { return d.x - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15;}) // i have no idea wtf is going on here
-          .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 + sizeScale(d.reputation)/15 ;})
-          ;
-          names
-          .attr("x", function(d) { return d.x;})
-          .attr("y", function(d) { return d.y - sizeScale(d.reputation)/2 ;})
-          ;
-
-
-          link
-            .attr("x1", function(d) {
-              return d.source.x;
-            })
-            .attr("y1", function(d) {
-              return d.source.y;
-            })
-            .attr("x2", function(d) {
-              return d.target.x;
-            })
-            .attr("y2", function(d) {
-              return d.target.y;
-            })
-
-            .attr("stroke", function(d) {
-              // each link is duplicated so bob->alice may be 1 and alice->bob may be 0
-              // if either is 0, the link is red, otherwise its green
-              var one_0_other_1 = graph.links.find(function(l) {
-                return l.source.id === d.target.id && l.target.id === d.source.id && l.value !== d.value;
-              });
-              if (one_0_other_1) {
-                return "#b53a2f";
-              } else if (d.value === 1) {
-                return "#00946c";
-              } else {
-                return "#b53a2f";
-              }
-            });
-
-          node
-            .attr("cx", function(d) {
-              return d.x;
-            })
-            .attr("cy", function(d) {
-              return d.y;
-            });
-
-
-          updateStats(graph.nodes); // call the function to update the stats div
-        }
-
-        function dragstarted(d) {
-          if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-          d.fx = d.x;
-          d.fy = d.y;
-        }
-
-        function dragged(d) {
-          if (tooltip.style("display") === "block") {
-            tooltip.style("display", "none");
-          }
-          d.fx = d3.event.x;
-          d.fy = d3.event.y;
-        }
-
-        function dragended(d) {
-          if (!d3.event.active) simulation.alphaTarget(0);
-          d.fx = null;
-          d.fy = null;
-        }
+      function dragended(d) {
+        if (!d3.event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
     
     </script>
