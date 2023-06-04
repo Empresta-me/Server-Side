@@ -103,6 +103,15 @@
 
 
 
+      // function to remove a node
+      function removeNode(node){
+        const nodeId = node.id;
+        graph.nodes.splice(nodeId, 1);
+        graph.links = graph.links.filter(d => d.source.id != nodeId && d.target.id != nodeId);
+      }
+
+
+
       // function to add a node
       function addNode(){
         let node = randomNode();
@@ -317,7 +326,13 @@
         .on("mouseout", function(d) {
         tooltip.style("display", "none");
         })
-      ;
+        // Add contextmenu event listener for right button click
+        .on("contextmenu", function(d) {
+          d3.event.preventDefault(); // Prevent default right-click context menu
+
+          //removeNode(d);
+        })
+        ;
       
 
 
@@ -371,7 +386,15 @@
         // Add mouseout event listener to hide tooltip
         .on("mouseout", function(d) {
         tooltip.style("display", "none");
-        }); 
+        })
+        // Add contextmenu event listener for right button click
+        .on("contextmenu", function(d) {
+          d3.event.preventDefault(); // Prevent default right-click context menu
+
+          //removeNode(d);
+        })
+        ;
+
 
         var names = nodeEnter.append("text")
         .attr("text-anchor", "middle")
@@ -402,7 +425,13 @@
         .on("mouseout", function(d) {
         tooltip.style("display", "none");
         })
-        ; 
+        // Add contextmenu event listener for right button click
+        .on("contextmenu", function(d) {
+          d3.event.preventDefault(); // Prevent default right-click context menu
+
+          //removeNode(d);
+        })
+        ;
 
 
       function updateStats(nodes) {
