@@ -229,10 +229,17 @@ class Community:
     def get_topology(self, observer_address : str, use_aliases : bool = False):
         diagram = self.network.gen_diagram(observer_address)
 
+        res = str(diagram) 
+
+        return res
+    
+    def get_topology_diagram(self, observer_address : str, use_aliases : bool = False):
+        diagram = self.network.gen_diagram(observer_address)
+
         res = str(diagram)
 
         # TODO: remove this later
-        """
+        
         if diagram:
             nodes = [i['name'] for i in diagram['nodes']]
 
@@ -244,8 +251,8 @@ class Community:
 
                 name = booboo[0]
                 booboo = booboo[1:]
-                res = res.replace(node,name)"""
-
+                res = res.replace(node,name)
+       
         if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
 
@@ -256,10 +263,7 @@ class Community:
                 if info:
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
-                else:
-                    name = booboo[0]
-                    booboo = booboo[1:]
-                    res = res.replace(node,name)
+        
 
         return res
 
