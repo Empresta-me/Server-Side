@@ -14,7 +14,6 @@
         <style>
             body,h1 {
               font-family: "Raleway", sans-serif;
-              /* font-family: 'Comfortaa', cursive; */
               margin: 0;      
               overflow: hidden;
           }
@@ -101,89 +100,6 @@
       //intialize data
       var graph = JSON.parse(res);
 
-
-
-      // function to remove a node
-      function removeNode(node){
-        const nodeId = node.id;
-        graph.nodes.splice(nodeId, 1);
-        graph.links = graph.links.filter(d => d.source.id != nodeId && d.target.id != nodeId);
-      }
-
-
-
-      // function to add a node
-      function addNode(){
-        let node = randomNode();
-        randomLinks(node);
-      }
-
-
-      // function to generate a random node
-      function randomNode(){
-        
-        const randomName = Math.random().toString(36).substring(7);
-        const nextId = graph.nodes.length + 1;
-        const randomTrustValue = Math.floor(Math.random() * 100); // hopefully this is between 0 and 100 I cant be fucked to check
-        const imageIdx = d.name.split('').map(i => i.charCodeAt(0)).reduce((a, b) => a + b, 0) % 9 + 1
-        const randomLogo = "/static/profile/"+imageIdx+".png";
-
-        let node = {
-          name: randomName,
-          id: nextId,
-          trustValue: randomTrustValue,
-          logo: randomLogo
-        }
-        
-        graph.nodes.push(node);
-        return node;
-      }
-
-
-      function randomLinks(node){
-        const numberOfLinks = 1 + Math.floor(Math.random() * 4); // [1,4]
-
-        const connections = [];
-        const randomNodeId = node.id;
-        for (let i = 0; i< numberOfLinks; i++){
-          while (randomNodeId == node.id || connections.includes(randomNodeId)){ // random new node
-            const randomNodeId = Math.floor(Math.random() * graph.nodes.length);
-          }
-          connections.push(randomNodeId);
-          oldNode = graph.getElementById(randomNodeId);
-
-          // newNode -> oldNode
-          const source = node.name;
-          const target = oldNode.name;
-          const value = Math.floor(Marh.random() * 2); // [0,1]
-          let link = {
-            source: source,
-            target: target,
-            value: value
-          }
-          graph.links.push(link);
-
-          // oldNode -> newNode
-          source = oldNode.name;
-          target = node.name;
-          value = Math.floor(Marh.random() * 2); // [0,1]
-          link = {
-            source: source,
-            target: target,
-            value: value
-          }
-          graph.links.push(link);
-        }
-
-
-
-
-      }
-
-
-
-
-      // network visualization stuff ↓
 
       // function used to compute sizes based on the user's trust value
       var sizeScale = d3.scaleLinear()
@@ -329,8 +245,6 @@
         // Add contextmenu event listener for right button click
         .on("contextmenu", function(d) {
           d3.event.preventDefault(); // Prevent default right-click context menu
-
-          //removeNode(d);
         })
         ;
       
@@ -390,8 +304,6 @@
         // Add contextmenu event listener for right button click
         .on("contextmenu", function(d) {
           d3.event.preventDefault(); // Prevent default right-click context menu
-
-          //removeNode(d);
         })
         ;
 
@@ -428,8 +340,6 @@
         // Add contextmenu event listener for right button click
         .on("contextmenu", function(d) {
           d3.event.preventDefault(); // Prevent default right-click context menu
-
-          //removeNode(d);
         })
         ;
 
