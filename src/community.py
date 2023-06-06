@@ -232,7 +232,7 @@ class Community:
         res = str(diagram)
 
         # TODO: remove this later
-
+        """
         if diagram:
             nodes = [i['name'] for i in diagram['nodes']]
 
@@ -244,15 +244,21 @@ class Community:
 
                 name = booboo[0]
                 booboo = booboo[1:]
-                res = res.replace(node,name)
+                res = res.replace(node,name)"""
 
         if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
+
+            booboo = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat', 'Anonymous Dog', 'Anonymous Bunny', 'Anonymous Bird', 'Anonymous Penguin', 'Anonymous Hamster', 'Anonymous Shark']
 
             for node in nodes:
                 info = self.get_account_info(observer_address, node)
                 if info:
                     name = json.loads(info)['alias']
+                    res = res.replace(node,name)
+                else:
+                    name = booboo[0]
+                    booboo = booboo[1:]
                     res = res.replace(node,name)
 
         return res
