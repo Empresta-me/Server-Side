@@ -253,7 +253,7 @@ class Community:
             for node in nodes:
                 info = self.get_account_info(observer_address, node)
                 if info:
-                    print(info)
+                    info = info.replace("'",'"') # kill me please
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
                 else:
