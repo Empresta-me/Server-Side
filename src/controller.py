@@ -243,7 +243,7 @@ def start_api(pem : str):
     @app.route("/network/topology", methods=['GET'])
     def serve_topology():
         """Gets the community's public information"""
-        observer = request.headers.get("observer", None)
+        observer = request.args.get("observer", None)
 
         topology = community.get_topology(observer)
 
