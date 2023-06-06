@@ -20,6 +20,8 @@ class Community:
     ACCOUNT_KEY = "ACCOUNT"
     ACCINFO_KEY = "ACCINFO"
 
+    ALIASES = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat', 'Anonymous Dog', 'Anonymous Bunny', 'Anonymous Bird', 'Anonymous Penguin', 'Anonymous Hamster', 'Anonymous Shark', 'Anonymous Wombat', 'Anonymous Bear']
+
     def __init__(self, key_encryption_password : str):
      
         # gets public and private key from PEM file
@@ -233,38 +235,24 @@ class Community:
 
         return res
     
-    def get_topology_diagram(self, observer_address : str, use_aliases : bool = False):
+    def get_topology_diagram(self, observer_address : str, use_aliases : bool = True):
         diagram = self.network.gen_diagram(observer_address)
 
         res = str(diagram)
 
-        # TODO: remove this later
-        
-        if diagram:
-            nodes = [i['name'] for i in diagram['nodes']]
-
-            booboo = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat', 'Anonymous Dog', 'Anonymous Bunny', 'Anonymous Bird', 'Anonymous Penguin', 'Anonymous Hamster', 'Anonymous Shark']
-            for node in nodes:
-
-                if node == observer_address:
-                    continue
-
-                name = booboo[0]
-                booboo = booboo[1:]
-                res = res.replace(node,name)
-       
         if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
-
-            booboo = ['Anonymous Fox','Anonymous Rat','Anonymous Bat','Anonymous Cat', 'Anonymous Dog', 'Anonymous Bunny', 'Anonymous Bird', 'Anonymous Penguin', 'Anonymous Hamster', 'Anonymous Shark']
 
             for node in nodes:
                 info = self.get_account_info(observer_address, node)
                 if info:
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
+                else:
+                    name = self.ALIASES.pop()
+                    self.ALIASES = [name] + self.ALIASES
+                    res = res.replace(node,name)
         
-
         return res
 
     def request_info(self, host_key : str, guest_key : str):
