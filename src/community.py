@@ -8,6 +8,7 @@ from src.protocol import *
 from src.authentication import *
 from src.network import Network
 import json
+import hashlib
 
 class Community:
 
@@ -240,6 +241,12 @@ class Community:
 
         res = str(diagram)
 
+        def get_alias(key):
+            h = hashlib.md5(key.encode('UTF-8'))
+            int_val = int.from_bytes(h.digest(), "big")
+            index = int_val % len(self.ALIASES)
+            return self.ALIASES[index]
+
         if use_aliases and diagram and diagram['nodes']:
             nodes = [i['name'] for i in diagram['nodes']]
 
@@ -249,8 +256,7 @@ class Community:
                     name = json.loads(info)['alias']
                     res = res.replace(node,name)
                 else:
-                    name = self.ALIASES.pop()
-                    self.ALIASES = [name] + self.ALIASES
+                    name = get_alias(node)
                     res = res.replace(node,name)
         
         return res
