@@ -251,6 +251,11 @@ class Community:
             nodes = [i['name'] for i in diagram['nodes']]
 
             for node in nodes:
+
+                if node == observer_address:
+                    res = res.replace(observer_address,'(You)')
+                    continue
+
                 info = self.get_account_info(observer_address, node)
                 if info:
                     info = info.replace("'",'"') # kill me please
