@@ -252,9 +252,7 @@ class Community:
 
             for node in nodes:
 
-                print('node: ' + str(node))
-                print('observer: ' + str(observer_address))
-                if node == observer_address:
+                if node == '(You)':
                     res = res.replace(observer_address,'(You)')
                     continue
 
